@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AviaTarr — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{
+  --bg-void:#05050A;--bg-dark:#0A0A14;--bg-card:#0F0F1E;--bg-glass:rgba(255,255,255,0.04);
+  --blue-glow:#00D4FF;--purple-glow:#8B00FF;--gold:#FFD700;--gold-dark:#CC9900;
+  --red-crash:#FF2244;--green-win:#00FF88;
+  --text-primary:#FFFFFF;--text-muted:#7A7A9A;
+  --border-glow:rgba(0,212,255,0.3);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg-dark);color:#fff;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+input,select,textarea{font-family:inherit;outline:none;color:#fff;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;transition:border-color 0.2s,background 0.2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--blue-glow);background:rgba(0,212,255,0.05)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--bg-void)}
+::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.4);border-radius:8px}
+
+/* ============================================
+   LOGIN GATE
+   ============================================ */
+.gate{
+  position:fixed;inset:0;z-index:99999;background:var(--bg-void);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.gate.hide{display:none}
+.gate-card{
+  width:100%;max-width:420px;padding:40px 32px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.01));
+  border:1px solid rgba(255,34,68,0.3);border-radius:18px;
+  backdrop-filter:blur(20px);
+  box-shadow:0 8px 40px rgba(0,0,0,0.6),0 0 40px rgba(255,34,68,0.15);
+  text-align:center;
+}
+.gate-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
+.gate-logo svg{width:36px;height:36px;filter:drop-shadow(0 0 8px var(--blue-glow))}
+.gate-logo .name{font-family:'Orbitron';font-weight:900;font-size:20px;letter-spacing:0.05em}
+.gate-logo .tarr{color:var(--blue-glow);text-shadow:0 0 10px var(--blue-glow)}
+.gate h2{font-family:'Rajdhani';font-weight:700;font-size:22px;color:var(--red-crash);margin-top:14px;letter-spacing:0.1em;text-transform:uppercase}
+.gate p{color:var(--text-muted);font-size:13px;margin:6px 0 24px}
+.gate input{padding:14px;text-align:center;letter-spacing:0.2em;font-size:15px}
+.gate button{
+  margin-top:14px;width:100%;padding:14px;border-radius:10px;
+  background:linear-gradient(135deg,var(--red-crash),#aa0022);color:#fff;
+  font-family:'Rajdhani';font-weight:700;font-size:15px;letter-spacing:0.15em;text-transform:uppercase;
+  transition:all 0.25s;
+}
+.gate button:hover{transform:translateY(-2px);box-shadow:0 0 20px rgba(255,34,68,0.5)}
+.gate-err{color:var(--red-crash);font-size:13px;margin-top:10px;min-height:18px}
+
+/* ============================================
+   APP SHELL
+   ============================================ */
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{
+  background:var(--bg-void);border-right:1px solid rgba(255,255,255,0.06);
+  padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:0 22px;margin-bottom:30px}
+.sb-logo svg{width:32px;height:32px;filter:drop-shadow(0 0 8px var(--blue-glow))}
+.sb-logo .name{font-family:'Orbitron';font-weight:900;font-size:18px}
+.sb-logo .tarr{color:var(--blue-glow);text-shadow:0 0 10px var(--blue-glow)}
+.sb-logo .sub{font-size:9px;color:var(--gold);letter-spacing:0.2em;font-weight:600}
+
+.sb-nav{display:flex;flex-direction:column;gap:2px;padding:0 12px}
+.sb-link{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;border-radius:10px;
+  font-family:'Rajdhani';font-weight:600;font-size:14px;letter-spacing:0.05em;
+  color:var(--text-muted);transition:all 0.2s;cursor:pointer;position:relative;
+}
+.sb-link i{width:18px;text-align:center;font-size:14px}
+.sb-link:hover{background:rgba(0,212,255,0.06);color:#fff}
+.sb-link.active{
+  background:linear-gradient(90deg,rgba(0,212,255,0.18),rgba(0,212,255,0.04));
+  color:var(--blue-glow);border-left:3px solid var(--blue-glow);padding-left:11px;
+}
+.sb-badge{
+  margin-left:auto;background:var(--red-crash);color:#fff;
+  font-size:10px;padding:2px 7px;border-radius:30px;font-weight:700;
+  box-shadow:0 0 8px var(--red-crash);
+}
+.sb-foot{
+  padding:16px 22px;border-top:1px solid rgba(255,255,255,0.06);margin-top:24px;
+  font-size:11px;color:var(--text-muted);
+}
+.sb-foot a{color:var(--gold);cursor:pointer}
+
+/* ============================================
+   MAIN
+   ============================================ */
+.main{padding:24px 28px;min-width:0}
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;
+}
+.topbar h1{font-family:'Orbitron';font-weight:800;font-size:22px;letter-spacing:0.03em}
+.topbar h1 small{font-size:12px;font-weight:500;color:var(--text-muted);letter-spacing:0.15em;display:block;margin-top:2px;font-family:'Inter'}
+.admin-actions{display:flex;align-items:center;gap:10px}
+.admin-pill{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,34,68,0.1);border:1px solid rgba(255,34,68,0.3);
+  border-radius:30px;padding:6px 14px 6px 6px;font-size:13px;
+}
+.admin-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--red-crash),#aa0022);display:flex;align-items:center;justify-content:center;font-family:'Orbitron';font-weight:700;font-size:13px}
+.btn-logout{background:rgba(255,34,68,0.1);color:var(--red-crash);padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;transition:all 0.2s}
+.btn-logout:hover{background:var(--red-crash);color:#fff}
+
+.alert-banner{
+  background:linear-gradient(90deg,rgba(255,215,0,0.15),rgba(255,215,0,0.05));
+  border:1px solid var(--gold);border-radius:12px;padding:14px 18px;
+  display:flex;align-items:center;gap:14px;margin-bottom:20px;
+}
+.alert-banner i{font-size:20px;color:var(--gold)}
+.alert-banner strong{color:var(--gold)}
+.alert-banner a{margin-left:auto;color:var(--gold);font-weight:600}
+
+/* TABS PANES */
+.pane{display:none;animation:fadeIn 0.3s ease}
+.pane.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:24px}
+.kpi{
+  padding:18px 20px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.08);position:relative;overflow:hidden;
+}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue-glow)}
+.kpi.purple::before{background:var(--purple-glow)}
+.kpi.gold::before{background:var(--gold)}
+.kpi.green::before{background:var(--green-win)}
+.kpi.red::before{background:var(--red-crash)}
+.kpi-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:8px}
+.kpi-value{font-family:'Orbitron';font-weight:800;font-size:24px;color:#fff;display:flex;align-items:center;gap:8px}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:4px}
+.kpi-badge{background:var(--red-crash);color:#fff;font-size:11px;padding:2px 8px;border-radius:30px;font-weight:700;animation:badgeBlink 2s ease-in-out infinite}
+@keyframes badgeBlink{0%,100%{opacity:1}50%{opacity:0.6}}
+
+/* CHART CARD */
+.chart-card,.card{
+  padding:20px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.08);margin-bottom:20px;
+}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.card-title{font-family:'Rajdhani';font-weight:700;font-size:16px;letter-spacing:0.05em;text-transform:uppercase;color:var(--gold)}
+.chart-legend{display:flex;gap:14px;font-size:12px;color:var(--text-muted)}
+.chart-legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.chart-legend .dep::before{background:var(--green-win);box-shadow:0 0 8px var(--green-win)}
+.chart-legend .wd::before{background:var(--red-crash);box-shadow:0 0 8px var(--red-crash)}
+#revChart{width:100%;height:280px;display:block}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;border-radius:10px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+.tbl thead th{
+  text-align:left;padding:12px 14px;background:rgba(0,212,255,0.06);
+  color:var(--blue-glow);font-family:'Rajdhani';font-weight:700;font-size:12px;
+  letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(0,212,255,0.2);
+}
+.tbl tbody td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tbl tbody tr{transition:background 0.15s}
+.tbl tbody tr:hover{background:rgba(0,212,255,0.04)}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--blue-glow)}
+
+.status-pill{padding:3px 10px;border-radius:30px;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;display:inline-block}
+.s-pending{background:rgba(255,215,0,0.15);color:var(--gold);border:1px solid rgba(255,215,0,0.3)}
+.s-approved{background:rgba(0,255,136,0.15);color:var(--green-win);border:1px solid rgba(0,255,136,0.3)}
+.s-rejected{background:rgba(255,34,68,0.15);color:var(--red-crash);border:1px solid rgba(255,34,68,0.3)}
+.s-active{background:rgba(0,255,136,0.1);color:var(--green-win)}
+.s-banned{background:rgba(255,34,68,0.15);color:var(--red-crash)}
+.s-live{background:rgba(255,34,68,0.15);color:var(--red-crash);border:1px solid var(--red-crash)}
+
+/* Filter / search row */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:center}
+.toolbar input,.toolbar select{padding:8px 12px;font-size:13px;width:auto}
+.toolbar .search{flex:1;min-width:200px;max-width:300px}
+.btn-action{
+  padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;
+  letter-spacing:0.05em;text-transform:uppercase;transition:all 0.2s;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.btn-approve{background:rgba(0,255,136,0.15);color:var(--green-win);border:1px solid rgba(0,255,136,0.3)}
+.btn-approve:hover{background:var(--green-win);color:#000}
+.btn-reject{background:rgba(255,34,68,0.15);color:var(--red-crash);border:1px solid rgba(255,34,68,0.3)}
+.btn-reject:hover{background:var(--red-crash);color:#fff}
+.btn-view{background:rgba(0,212,255,0.15);color:var(--blue-glow);border:1px solid rgba(0,212,255,0.3)}
+.btn-view:hover{background:var(--blue-glow);color:#000}
+.btn-edit{background:rgba(255,215,0,0.15);color:var(--gold);border:1px solid rgba(255,215,0,0.3)}
+.btn-edit:hover{background:var(--gold);color:#000}
+.btn-pri{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#000;padding:9px 18px;border-radius:8px;font-family:'Rajdhani';font-weight:700;letter-spacing:0.1em;text-transform:uppercase;font-size:13px;transition:all 0.2s}
+.btn-pri:hover{transform:translateY(-2px);box-shadow:0 0 18px rgba(255,215,0,0.5)}
+.btn-sec{background:transparent;color:var(--blue-glow);border:1.5px solid var(--blue-glow);padding:9px 18px;border-radius:8px;font-family:'Rajdhani';font-weight:700;letter-spacing:0.1em;text-transform:uppercase;font-size:13px;transition:all 0.2s}
+.btn-sec:hover{background:rgba(0,212,255,0.1)}
+
+.screenshot-thumb{
+  width:48px;height:36px;border-radius:6px;background:linear-gradient(135deg,#2a2a4a,#0f0f1e);
+  display:flex;align-items:center;justify-content:center;color:var(--blue-glow);
+  cursor:pointer;border:1px solid rgba(0,212,255,0.3);transition:all 0.2s;
+}
+.screenshot-thumb:hover{border-color:var(--blue-glow);box-shadow:0 0 10px rgba(0,212,255,0.4)}
+
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ACTIVITY FEED */
+.activity-list{max-height:340px;overflow-y:auto}
+.act-item{
+  display:flex;align-items:center;gap:12px;padding:10px 4px;
+  border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;
+}
+.act-icon{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+}
+.act-icon.dep{background:rgba(0,255,136,0.15);color:var(--green-win)}
+.act-icon.wd{background:rgba(255,34,68,0.15);color:var(--red-crash)}
+.act-icon.tourn{background:rgba(255,215,0,0.15);color:var(--gold)}
+.act-icon.reg{background:rgba(0,212,255,0.15);color:var(--blue-glow)}
+.act-text{flex:1}
+.act-time{font-size:11px;color:var(--text-muted)}
+
+/* DASHBOARD GRID */
+.dash-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;margin-top:8px}
+@media(max-width:1100px){.dash-grid{grid-template-columns:1fr}}
+
+/* MODAL */
+.modal-bg{
+  position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-bg.show{display:flex;animation:fadeIn 0.2s}
+.modal{
+  background:var(--bg-card);border:1px solid rgba(0,212,255,0.3);border-radius:14px;
+  max-width:600px;width:100%;max-height:90vh;overflow-y:auto;
+  box-shadow:0 0 40px rgba(0,0,0,0.8),0 0 30px rgba(0,212,255,0.15);
+}
+.modal.wide{max-width:900px}
+.modal-head{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-family:'Rajdhani';font-weight:700;font-size:18px;color:var(--gold);letter-spacing:0.05em;text-transform:uppercase}
+.modal-close{font-size:18px;color:var(--text-muted);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.modal-close:hover{background:rgba(255,34,68,0.15);color:var(--red-crash)}
+.modal-body{padding:24px}
+.modal-foot{padding:16px 24px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:flex-end;gap:10px}
+
+.field-group{margin-bottom:14px}
+.field-group label{display:block;font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;font-weight:600}
+
+.screenshot-preview{
+  width:100%;max-height:500px;border-radius:12px;
+  background:linear-gradient(135deg,#1a1a2e,#0a0a14);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;color:var(--text-muted);
+  border:1px solid rgba(0,212,255,0.2);
+}
+.screenshot-preview i{font-size:80px;color:var(--blue-glow);margin-bottom:20px;opacity:0.4}
+.screenshot-preview .info{font-family:'Orbitron';color:var(--gold);font-size:20px;margin:8px 0}
+.screenshot-preview .meta{font-size:13px;line-height:1.8;text-align:center}
+
+/* Player detail */
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px}
+.detail-stat{padding:14px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.06)}
+.detail-stat .l{font-size:10px;color:var(--text-muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:4px}
+.detail-stat .v{font-family:'Orbitron';font-weight:700;font-size:16px;color:#fff}
+.detail-stat .v.green{color:var(--green-win)}
+.detail-stat .v.gold{color:var(--gold)}
+
+.subtabs{display:flex;gap:8px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.subtab{padding:10px 16px;font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s}
+.subtab.active{color:var(--blue-glow);border-bottom-color:var(--blue-glow)}
+
+/* Settings */
+.set-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.set-row:last-child{border:none}
+.set-info{flex:1}
+.set-info strong{display:block;font-size:14px;margin-bottom:4px}
+.set-info span{font-size:12px;color:var(--text-muted)}
+.set-control{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.slider-input{width:200px}
+.slider-input input[type="range"]{width:100%;-webkit-appearance:none;background:rgba(0,212,255,0.2);height:4px;border-radius:2px;outline:none;padding:0}
+.slider-input input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--gold);border-radius:50%;cursor:pointer;box-shadow:0 0 8px var(--gold)}
+
+/* Toggle */
+.toggle{position:relative;width:46px;height:24px;background:rgba(255,255,255,0.08);border-radius:24px;cursor:pointer;transition:all 0.2s}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:all 0.25s}
+.toggle.on{background:var(--green-win);box-shadow:0 0 8px var(--green-win)}
+.toggle.on::after{left:24px}
+
+.range-pair{display:flex;gap:8px;align-items:center}
+.range-pair input{width:80px;text-align:center}
+
+/* Tournament prize tier builder */
+.tier-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.tier-row{display:flex;gap:10px;align-items:center}
+.tier-row input{flex:1}
+.tier-row .rm{color:var(--red-crash);padding:6px;cursor:pointer}
+
+/* Toast */
+.toast-container{position:fixed;top:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:360px}
+.toast{
+  background:rgba(15,15,30,0.95);backdrop-filter:blur(20px);
+  border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:12px;
+  border-left:3px solid var(--blue-glow);box-shadow:0 8px 30px rgba(0,0,0,0.5);
+  transform:translateX(420px);transition:transform 0.4s ease;
+  position:relative;overflow:hidden;cursor:pointer;font-size:14px;
+}
+.toast.show{transform:translateX(0)}
+.toast.success{border-left-color:var(--green-win)}
+.toast.error{border-left-color:var(--red-crash)}
+.toast.warning{border-left-color:var(--gold)}
+.toast-icon{font-size:18px;flex-shrink:0}
+.toast.success .toast-icon{color:var(--green-win)}
+.toast.error .toast-icon{color:var(--red-crash)}
+.toast.warning .toast-icon{color:var(--gold)}
+.toast.info .toast-icon{color:var(--blue-glow)}
+.toast-progress{position:absolute;bottom:0;left:0;height:2px;background:currentColor;animation:tProg 3.5s linear forwards}
+@keyframes tProg{from{width:100%}to{width:0%}}
+
+/* Mobile */
+.mobile-toggle{display:none;position:fixed;top:14px;left:14px;z-index:100;background:var(--bg-card);width:42px;height:42px;border-radius:8px;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.1);cursor:pointer}
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:-260px;width:240px;z-index:99;transition:left 0.3s ease}
+  .sidebar.open{left:0;box-shadow:5px 0 30px rgba(0,0,0,0.7)}
+  .mobile-toggle{display:flex}
+  .main{padding:64px 16px 24px}
+}
+
+/* Empty state */
+.empty{padding:40px 20px;text-align:center;color:var(--text-muted)}
+.empty i{font-size:40px;margin-bottom:10px;opacity:0.4;display:block}
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================ LOGIN GATE ============================================ -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <svg viewBox="0 0 64 64"><path d="M32 8 L40 28 L56 32 L40 36 L32 56 L24 36 L8 32 L24 28 Z" fill="url(#g3)" stroke="#00D4FF" stroke-width="1.5"/>
+      <defs><linearGradient id="g3" x1="0" x2="1"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#8B00FF"/></linearGradient></defs></svg>
+      <div class="name">AVIA<span class="tarr">TARR</span></div>
+    </div>
+    <h2><i class="fas fa-lock"></i> Admin Access</h2>
+    <p>Authorized personnel only. Enter admin password to continue.</p>
+    <input type="password" id="gatePass" placeholder="ADMIN PASSWORD" autocomplete="off">
+    <button id="gateBtn">UNLOCK PANEL</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<!-- ============================================ APP SHELL ============================================ -->
+<div class="mobile-toggle" id="mobToggle"><i class="fas fa-bars" style="color:#fff"></i></div>
+<div class="shell" id="shell" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 64 64"><path d="M32 8 L40 28 L56 32 L40 36 L32 56 L24 36 L8 32 L24 28 Z" fill="url(#g4)" stroke="#00D4FF" stroke-width="1.5"/>
+      <defs><linearGradient id="g4" x1="0" x2="1"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#8B00FF"/></linearGradient></defs></svg>
+      <div>
+        <div class="name">AVIA<span class="tarr">TARR</span></div>
+        <div class="sub">ADMIN PANEL</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <a class="sb-link active" data-tab="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+      <a class="sb-link" data-tab="players"><i class="fas fa-users"></i> Players</a>
+      <a class="sb-link" data-tab="deposits"><i class="fas fa-arrow-down"></i> Deposits <span class="sb-badge" id="sbDep">0</span></a>
+      <a class="sb-link" data-tab="withdrawals"><i class="fas fa-arrow-up"></i> Withdrawals <span class="sb-badge" id="sbWd">0</span></a>
+      <a class="sb-link" data-tab="tournaments"><i class="fas fa-trophy"></i> Tournaments</a>
+      <a class="sb-link" data-tab="settings"><i class="fas fa-cog"></i> Game Settings</a>
+      <a class="sb-link" data-tab="announce"><i class="fas fa-bullhorn"></i> Announcements</a>
+    </nav>
+    <div class="sb-foot">
+      Session expires in <span id="sessTimer">2h 00m</span><br>
+      <a id="seedBtn" title="Generate sample data for demo">+ Seed demo data</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h1 id="paneTitle">Dashboard <small>Overview & KPIs</small></h1>
+      <div class="admin-actions">
+        <div class="admin-pill">
+          <div class="admin-avatar">A</div>
+          <span>Admin</span>
+        </div>
+        <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+
+    <!-- Pending alert -->
+    <div class="alert-banner" id="pendingAlert" style="display:none">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div><strong id="pendingCount">0</strong> pending approvals require your attention.</div>
+      <a id="goReview">Review now →</a>
+    </div>
+
+    <!-- ============================================ DASHBOARD ============================================ -->
+    <div class="pane active" id="pane-dashboard">
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="dash-grid">
+        <div class="chart-card">
+          <div class="card-head">
+            <div class="card-title"><i class="fas fa-chart-area"></i> Revenue — Last 30 Days</div>
+            <div class="chart-legend"><span class="dep">Deposits</span><span class="wd">Withdrawals</span></div>
+          </div>
+          <canvas id="revChart"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="fas fa-stream"></i> Recent Activity</div></div>
+          <div class="activity-list" id="actList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ PLAYERS ============================================ -->
+    <div class="pane" id="pane-players">
+      <div class="card">
+        <div class="toolbar">
+          <input type="text" placeholder="🔍 Search by username or email..." class="search" id="plSearch">
+          <select id="plStatus"><option value="">All Statuses</option><option value="active">Active</option><option value="banned">Banned</option></select>
+          <button class="btn-pri" id="plRefresh"><i class="fas fa-sync"></i> Refresh</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Username</th><th>Email</th><th>Balance</th><th>Deposited</th><th>Withdrawn</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="plBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ DEPOSITS ============================================ -->
+    <div class="pane" id="pane-deposits">
+      <div class="card">
+        <div class="toolbar">
+          <input type="text" placeholder="🔍 Search by username or date..." class="search" id="depSearch">
+          <select id="depStatus"><option value="">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+          <button class="btn-pri" id="bulkApprove"><i class="fas fa-check-double"></i> Bulk Approve</button>
+          <button class="btn-sec" id="depAddDemo"><i class="fas fa-plus"></i> Add Demo Deposit</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th><input type="checkbox" id="depCheckAll"></th><th>Player</th><th>Amount</th><th>Method</th><th>Screenshot</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="depBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ WITHDRAWALS ============================================ -->
+    <div class="pane" id="pane-withdrawals">
+      <div class="card">
+        <div class="toolbar">
+          <input type="text" placeholder="🔍 Search by username..." class="search" id="wdSearch">
+          <select id="wdStatus"><option value="">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+          <button class="btn-sec" id="wdAddDemo"><i class="fas fa-plus"></i> Add Demo Withdrawal</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Player</th><th>Amount</th><th>Account Details</th><th>Requested</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="wdBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ TOURNAMENTS ============================================ -->
+    <div class="pane" id="pane-tournaments">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fas fa-trophy"></i> All Tournaments</div>
+          <button class="btn-pri" id="newTournyBtn"><i class="fas fa-plus"></i> Create Tournament</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Name</th><th>Type</th><th>Prize Pool</th><th>Players</th><th>Starts</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="tournyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ SETTINGS ============================================ -->
+    <div class="pane" id="pane-settings">
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-sliders-h"></i> Game Parameters</div></div>
+        <div class="set-row">
+          <div class="set-info"><strong>House Edge</strong><span>Adjusts the crash point RNG. Higher edge = more house profit.</span></div>
+          <div class="set-control">
+            <div class="slider-input"><input type="range" id="houseEdge" min="0" max="20" step="0.5"></div>
+            <span id="houseEdgeVal" style="font-family:'Orbitron';color:var(--gold);font-weight:700;min-width:50px;text-align:right">5%</span>
+          </div>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><strong>Min Bet</strong><span>Minimum bet a player can place per round.</span></div>
+          <div class="set-control"><input type="number" id="minBet" style="width:120px"></div>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><strong>Max Bet</strong><span>Maximum bet a player can place per round.</span></div>
+          <div class="set-control"><input type="number" id="maxBet" style="width:120px"></div>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><strong>Maintenance Mode</strong><span>Disables the game and shows users a maintenance screen.</span></div>
+          <div class="set-control"><div class="toggle" id="tMaintenance"></div></div>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><strong>Fake Players Per Round</strong><span>Range of bot players to display in each round.</span></div>
+          <div class="set-control"><div class="range-pair"><input type="number" id="fakeMin"> – <input type="number" id="fakeMax"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-money-check"></i> Payment Methods</div></div>
+        <div id="pmList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-bullhorn"></i> Game-page Ticker Text</div></div>
+        <textarea id="tickerText" rows="3" placeholder="Welcome to AviaTarr! Win big in tonight's tournament..."></textarea>
+        <div style="margin-top:12px"><button class="btn-pri" id="saveSettingsBtn"><i class="fas fa-save"></i> Save All Settings</button></div>
+      </div>
+    </div>
+
+    <!-- ============================================ ANNOUNCEMENTS ============================================ -->
+    <div class="pane" id="pane-announce">
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-bullhorn"></i> Create Announcement</div></div>
+        <div class="field-group"><label>Title</label><input type="text" id="annTitle" placeholder="e.g. Weekend Mega Tournament"></div>
+        <div class="field-group"><label>Message</label><textarea id="annMsg" rows="3" placeholder="Details..."></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="field-group"><label>Type</label><select id="annType"><option value="info">Info</option><option value="warning">Warning</option><option value="promo">Promo</option></select></div>
+          <div class="field-group"><label>Expiry Date</label><input type="date" id="annExpiry"></div>
+        </div>
+        <button class="btn-pri" id="annCreate"><i class="fas fa-paper-plane"></i> Publish</button>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-list"></i> Active Announcements</div></div>
+        <div id="annList"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ============================================ MODAL ============================================ -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Title</h3>
+      <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   ADMIN SHARED STATE
+   ===================================================== */
+const ADMIN_PASSWORD = "aviatarr_admin_2025";
+const SESSION_KEY = 'aviatarr_admin_session';
+const SESSION_TIMEOUT = 2*60*60*1000; // 2h
+const AUDIT_KEY = 'aviatarr_admin_audit';
+
+const STORE = {
+  USERS:'aviatarr_users',
+  DEPOSITS:'aviatarr_deposits',
+  WITHDRAWS:'aviatarr_withdraws',
+  TOURNYS:'aviatarr_tournaments',
+  SETTINGS:'aviatarr_settings',
+  ANNOUNCE:'aviatarr_announcements',
+};
+
+const DB = {
+  get(k,fallback){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch(e){return fallback}},
+  set(k,v){localStorage.setItem(k,JSON.stringify(v))},
+  users(){
+    const data = this.get(STORE.USERS, null);
+    if (!data) return [];
+    // Handle both array (legacy) and object (current format from auth.html)
+    if (Array.isArray(data)) return data;
+    return Object.values(data);
+  },
+  saveUsers(u){
+    // Convert array back to object format (keyed by id)
+    if (Array.isArray(u)) {
+      const obj = {};
+      u.forEach(user => { if (user && user.id) obj[user.id] = user; });
+      this.set(STORE.USERS, obj);
+    } else {
+      this.set(STORE.USERS, u);
+    }
+  },
+  deposits(){return this.get(STORE.DEPOSITS,[])},
+  saveDeposits(d){this.set(STORE.DEPOSITS,d)},
+  withdraws(){return this.get(STORE.WITHDRAWS,[])},
+  saveWithdraws(w){this.set(STORE.WITHDRAWS,w)},
+  tournys(){return this.get(STORE.TOURNYS,[])},
+  saveTournys(t){this.set(STORE.TOURNYS,t)},
+  settings(){return this.get(STORE.SETTINGS,{houseEdge:5,minBet:10,maxBet:50000,maintenance:false,fakeMin:5,fakeMax:25,tickerText:'',paymentMethods:{easypaisa:true,jazzcash:true,bank:true,crypto:true,hbl:true,mcb:true}})},
+  saveSettings(s){this.set(STORE.SETTINGS,s)},
+  announce(){return this.get(STORE.ANNOUNCE,[])},
+  saveAnnounce(a){this.set(STORE.ANNOUNCE,a)},
+};
+
+function audit(action,detail){
+  const log = DB.get(AUDIT_KEY,[]);
+  log.unshift({ts:new Date().toISOString(),action,detail});
+  if (log.length>500) log.length=500;
+  DB.set(AUDIT_KEY,log);
+}
+
+function notifyUser(userId,title,msg,type='info'){
+  const users=DB.users();
+  const u=users.find(x=>String(x.id)===String(userId));
+  if (!u) return;
+  if (!u.notifications) u.notifications=[];
+  u.notifications.unshift({id:Date.now()+Math.random(),title,msg,type,read:false,ts:new Date().toISOString()});
+  DB.saveUsers(users);
+}
+
+/* =====================================================
+   TOAST
+   ===================================================== */
+function showToast(msg,type='info'){
+  const c=document.getElementById('toastContainer');
+  const icons={success:'fa-check-circle',error:'fa-times-circle',warning:'fa-exclamation-triangle',info:'fa-info-circle'};
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  t.innerHTML=`<i class="fas ${icons[type]} toast-icon"></i><span style="flex:1">${msg}</span><div class="toast-progress"></div>`;
+  c.appendChild(t);
+  while(c.children.length>3) c.removeChild(c.firstChild);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  const rm=()=>{t.style.transform='translateX(420px)';setTimeout(()=>t.remove(),400)};
+  t.addEventListener('click',rm);
+  setTimeout(rm,3500);
+}
+
+/* =====================================================
+   GATE / AUTH
+   ===================================================== */
+const gate=document.getElementById('gate'), shell=document.getElementById('shell');
+const gatePass=document.getElementById('gatePass'),gateBtn=document.getElementById('gateBtn'),gateErr=document.getElementById('gateErr');
+
+function checkSession(){
+  try{
+    const raw=sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
+    const s=JSON.parse(raw);
+    if (!s||!s.expiresAt) return false;
+    if (Date.now()>s.expiresAt) return false;
+    return true;
+  }catch(e){return false}
+}
+function bumpSession(){
+  sessionStorage.setItem(SESSION_KEY,JSON.stringify({expiresAt:Date.now()+SESSION_TIMEOUT}));
+}
+function enterPanel(){
+  gate.classList.add('hide');
+  shell.style.display='';
+  bumpSession();
+  initPanel();
+}
+function tryGate(){
+  if (gatePass.value===ADMIN_PASSWORD){
+    bumpSession();
+    enterPanel();
+    showToast('Admin access granted','success');
+    audit('admin_login','Admin authenticated');
+  } else {
+    gateErr.textContent='Invalid password. Access denied.';
+    gatePass.value='';
+    gatePass.focus();
+    setTimeout(()=>gateErr.textContent='',3000);
+  }
+}
+gateBtn.addEventListener('click',tryGate);
+gatePass.addEventListener('keydown',e=>{if(e.key==='Enter')tryGate()});
+
+// Init on load
+if (checkSession()) enterPanel();
+else gatePass.focus();
+
+// Session timer + activity tracking
+let inactivityTimer=null;
+function bumpActivity(){
+  if (!checkSession()) return;
+  bumpSession();
+}
+['click','keydown','mousemove'].forEach(e=>document.addEventListener(e,()=>{
+  if (inactivityTimer) return;
+  inactivityTimer=setTimeout(()=>{bumpActivity();inactivityTimer=null},5000);
+}));
+
+setInterval(()=>{
+  const raw=sessionStorage.getItem(SESSION_KEY);
+  if (!raw){
+    if (shell.style.display!=='none' && shell.style.display!==''){return}
+    if (!gate.classList.contains('hide')) return;
+    // expired
+    location.reload();
+    return;
+  }
+  try{
+    const s=JSON.parse(raw);
+    const left=s.expiresAt-Date.now();
+    if (left<=0){
+      sessionStorage.removeItem(SESSION_KEY);
+      showToast('Session expired. Please log in again.','warning');
+      setTimeout(()=>location.reload(),1500);
+      return;
+    }
+    const h=Math.floor(left/3600000),m=Math.floor((left%3600000)/60000);
+    const el=document.getElementById('sessTimer');
+    if (el) el.textContent=`${h}h ${String(m).padStart(2,'0')}m`;
+  }catch(e){}
+},5000);
+
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{
+  audit('admin_logout','Admin manually logged out');
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+});
+
+/* =====================================================
+   SIDEBAR / TABS
+   ===================================================== */
+function switchTab(name){
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.toggle('active',l.dataset.tab===name));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id==='pane-'+name));
+  const titles={dashboard:['Dashboard','Overview & KPIs'],players:['Players','Manage user accounts'],deposits:['Deposits','Approve & track payments'],withdrawals:['Withdrawals','Process payouts'],tournaments:['Tournaments','Schedule & manage events'],settings:['Game Settings','Tweak game parameters'],announce:['Announcements','Broadcast updates']};
+  const t=titles[name]||['',''];
+  document.getElementById('paneTitle').innerHTML=t[0]+' <small>'+t[1]+'</small>';
+  // refresh data on switch
+  if (name==='deposits') renderDeposits();
+  if (name==='withdrawals') renderWithdrawals();
+  if (name==='players') renderPlayers();
+  if (name==='tournaments') renderTournaments();
+  if (name==='announce') renderAnnouncements();
+  if (name==='settings') loadSettingsUI();
+  if (name==='dashboard') renderDashboard();
+  // close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+}
+document.addEventListener('click',e=>{
+  const link=e.target.closest('.sb-link');
+  if (link) switchTab(link.dataset.tab);
+});
+document.getElementById('mobToggle')?.addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
+
+/* =====================================================
+   MODAL
+   ===================================================== */
+const modalBg=document.getElementById('modalBg'),modalTitle=document.getElementById('modalTitle'),modalBody=document.getElementById('modalBody'),modalFoot=document.getElementById('modalFoot'),modal=document.getElementById('modal');
+function openModal(title,bodyHtml,footHtml='',wide=false){
+  modalTitle.innerHTML=title;
+  modalBody.innerHTML=bodyHtml;
+  modalFoot.innerHTML=footHtml;
+  modal.classList.toggle('wide',wide);
+  modalBg.classList.add('show');
+}
+function closeModal(){modalBg.classList.remove('show')}
+document.getElementById('modalClose').addEventListener('click',closeModal);
+modalBg.addEventListener('click',e=>{if(e.target===modalBg)closeModal()});
+
+/* =====================================================
+   DEMO DATA SEEDER
+   ===================================================== */
+function seedDemo(){
+  const usersExist=DB.users();
+  let users=usersExist;
+  if (users.length<3){
+    const demoNames=['SkullKing','NightOwl_Pak','RocketMan92','FastCash99','ZeeshanK','HighRoller','CrashKing','MoneyMoon','LegendOne','Falcon11','PKRPilot','EclipseFly'];
+    users=demoNames.map((n,i)=>({
+      id:Date.now()+i,
+      name:n.replace('_',' '),username:n,
+      email:n.toLowerCase()+'@aviatarr.demo',
+      passwordHash:btoa('demo123'),
+      balance:Math.floor(Math.random()*60000)+5000,
+      demoBalance:50000,tickets:Math.floor(Math.random()*20),
+      totalWins:Math.floor(Math.random()*200000),
+      totalWagered:Math.floor(Math.random()*500000),
+      biggestWin:Math.floor(Math.random()*100000),
+      joinedAt:new Date(Date.now()-Math.random()*60*86400000).toISOString(),
+      avatar:null,notifications:[],
+      depositHistory:[],withdrawHistory:[],gameHistory:[],
+      referralCode:'AT'+Math.random().toString(36).substr(2,6).toUpperCase(),
+      referredBy:null,
+      status: Math.random()>0.9 ? 'banned' : 'active',
+      totalDeposited:Math.floor(Math.random()*150000),
+      totalWithdrawn:Math.floor(Math.random()*100000),
+    }));
+    DB.saveUsers(users);
+  }
+  // deposits
+  let deposits=DB.deposits();
+  if (deposits.length<5){
+    const methods=['EasyPaisa','JazzCash','HBL','MCB','USDT','Bank Transfer'];
+    deposits=[];
+    for (let i=0;i<14;i++){
+      const u=users[Math.floor(Math.random()*users.length)];
+      const status=['pending','pending','pending','approved','approved','rejected'][Math.floor(Math.random()*6)];
+      deposits.push({
+        id:Date.now()+i*7,
+        userId:u.id,username:u.username,
+        amount:[500,1000,2000,5000,10000,25000][Math.floor(Math.random()*6)],
+        method:methods[Math.floor(Math.random()*methods.length)],
+        screenshot:'demo-receipt-'+(i+1)+'.jpg',
+        submittedAt:new Date(Date.now()-Math.random()*7*86400000).toISOString(),
+        status,
+        reason:status==='rejected'?'Invalid receipt':null,
+        approvedAt:status!=='pending'?new Date().toISOString():null,
+      });
+    }
+    DB.saveDeposits(deposits);
+  }
+  // withdrawals
+  let wds=DB.withdraws();
+  if (wds.length<3){
+    wds=[];
+    for (let i=0;i<8;i++){
+      const u=users[Math.floor(Math.random()*users.length)];
+      const status=['pending','pending','approved','rejected'][Math.floor(Math.random()*4)];
+      wds.push({
+        id:Date.now()+i*11,
+        userId:u.id,username:u.username,
+        amount:[1000,3000,5000,10000,25000][Math.floor(Math.random()*5)],
+        method:['EasyPaisa','JazzCash','Bank'][Math.floor(Math.random()*3)],
+        accountDetails:'03'+(Math.floor(Math.random()*90000000)+10000000),
+        requestedAt:new Date(Date.now()-Math.random()*5*86400000).toISOString(),
+        status,
+        proofNote:status==='approved'?'TXN'+Math.floor(Math.random()*999999):null,
+        deducted:true,
+      });
+    }
+    DB.saveWithdraws(wds);
+  }
+  // tournaments
+  let tns=DB.tournys();
+  if (tns.length<2){
+    tns=[
+      {id:1001,name:'Weekend Warrior Cup',type:'OPEN TO ALL',prizePool:25000,entryFee:0,maxPlayers:50,currentPlayers:34,startsAt:new Date(Date.now()+2*3600000).toISOString(),status:'upcoming',prizeTiers:[{rank:'1st',amount:10000},{rank:'2nd',amount:7500},{rank:'3rd',amount:5000},{rank:'4-10',amount:312}]},
+      {id:1002,name:'High Roller GP',type:'VIP',prizePool:50000,entryFee:200,maxPlayers:20,currentPlayers:9,startsAt:new Date(Date.now()+12*3600000).toISOString(),status:'upcoming',prizeTiers:[{rank:'1st',amount:25000},{rank:'2nd',amount:15000},{rank:'3rd',amount:10000}]},
+      {id:1003,name:'Rookie Rush',type:'BEGINNER',prizePool:5000,entryFee:0,maxPlayers:30,currentPlayers:18,startsAt:new Date(Date.now()+6*3600000).toISOString(),status:'upcoming',prizeTiers:[{rank:'1st',amount:3000},{rank:'2nd',amount:2000}]},
+      {id:1004,name:'Crash Kings',type:'OPEN',prizePool:15000,entryFee:50,maxPlayers:100,currentPlayers:42,startsAt:new Date(Date.now()-30*60000).toISOString(),status:'live',prizeTiers:[{rank:'1st',amount:8000},{rank:'2nd',amount:5000},{rank:'3rd',amount:2000}]},
+    ];
+    DB.saveTournys(tns);
+  }
+  return {users,deposits,wds,tns};
+}
+
+document.getElementById('seedBtn')?.addEventListener('click',()=>{
+  seedDemo();
+  showToast('Demo data seeded successfully','success');
+  audit('seed_demo','Generated demo dataset');
+  renderAll();
+});
+
+/* =====================================================
+   DASHBOARD
+   ===================================================== */
+function renderKPIs(){
+  const users=DB.users(),deps=DB.deposits(),wds=DB.withdraws(),tns=DB.tournys();
+  const totalDep=deps.filter(d=>d.status==='approved').reduce((s,d)=>s+d.amount,0);
+  const totalWd=wds.filter(w=>w.status==='approved').reduce((s,w)=>s+w.amount,0);
+  const profit=totalDep-totalWd;
+  const pendDep=deps.filter(d=>d.status==='pending').length;
+  const pendWd=wds.filter(w=>w.status==='pending').length;
+  const pending=pendDep+pendWd;
+  const activeTns=tns.filter(t=>t.status==='live'||t.status==='upcoming').length;
+  
+  document.getElementById('sbDep').textContent=pendDep;
+  document.getElementById('sbDep').style.display=pendDep>0?'inline-block':'none';
+  document.getElementById('sbWd').textContent=pendWd;
+  document.getElementById('sbWd').style.display=pendWd>0?'inline-block':'none';
+
+  const kpis=[
+    {label:'Total Players',value:users.length.toLocaleString(),sub:`${users.filter(u=>u.status!=='banned').length} active`,cls:''},
+    {label:'Total Deposited',value:'PKR '+totalDep.toLocaleString(),sub:`${deps.filter(d=>d.status==='approved').length} approved`,cls:'green'},
+    {label:'Total Withdrawn',value:'PKR '+totalWd.toLocaleString(),sub:`${wds.filter(w=>w.status==='approved').length} paid out`,cls:'red'},
+    {label:'House Profit',value:'PKR '+profit.toLocaleString(),sub:profit>=0?'Positive':'Loss',cls:'gold'},
+    {label:'Active Tournaments',value:activeTns,sub:`${tns.filter(t=>t.status==='live').length} live now`,cls:'purple'},
+    {label:'Pending Approvals',value:pending,sub:pending>0?'Action required':'All clear',cls:pending>0?'red':'green',badge:pending>0?pending:null},
+  ];
+  document.getElementById('kpiGrid').innerHTML=kpis.map(k=>`
+    <div class="kpi ${k.cls}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value} ${k.badge?'<span class="kpi-badge">'+k.badge+'</span>':''}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+  
+  // alert banner
+  const banner=document.getElementById('pendingAlert');
+  if (pending>0){
+    banner.style.display='flex';
+    document.getElementById('pendingCount').textContent=pending;
+    document.getElementById('goReview').onclick=()=>switchTab(pendDep>=pendWd?'deposits':'withdrawals');
+  } else banner.style.display='none';
+}
+
+function renderRevenueChart(){
+  const canvas=document.getElementById('revChart');
+  if (!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const dpr=devicePixelRatio||1;
+  canvas.width=canvas.offsetWidth*dpr;
+  canvas.height=canvas.offsetHeight*dpr;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr,dpr);
+  const W=canvas.offsetWidth,H=canvas.offsetHeight;
+  ctx.clearRect(0,0,W,H);
+  
+  // build 30-day arrays from real data + filler
+  const deps=DB.deposits(),wds=DB.withdraws();
+  const days=30;
+  const depData=Array(days).fill(0),wdData=Array(days).fill(0);
+  const now=Date.now();
+  deps.forEach(d=>{
+    if (d.status!=='approved')return;
+    const dayIdx=days-1-Math.floor((now-new Date(d.submittedAt).getTime())/86400000);
+    if (dayIdx>=0 && dayIdx<days) depData[dayIdx]+=d.amount;
+  });
+  wds.forEach(w=>{
+    if (w.status!=='approved')return;
+    const dayIdx=days-1-Math.floor((now-new Date(w.requestedAt).getTime())/86400000);
+    if (dayIdx>=0 && dayIdx<days) wdData[dayIdx]+=w.amount;
+  });
+  // add some baseline noise for visual
+  for (let i=0;i<days;i++){
+    depData[i]+= 8000 + Math.sin(i*0.5)*3000 + Math.random()*4000;
+    wdData[i]+= 5000 + Math.cos(i*0.4)*2500 + Math.random()*3000;
+  }
+  const max=Math.max(...depData,...wdData)*1.1 || 10000;
+  
+  const pad={l:50,r:14,t:14,b:30};
+  const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.05)';
+  ctx.lineWidth=1;
+  for (let i=0;i<=4;i++){
+    const y=pad.t+ch*(i/4);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='rgba(122,122,154,0.6)';
+    ctx.font='10px Inter';ctx.textAlign='right';ctx.textBaseline='middle';
+    const v=Math.round(max*(1-i/4)/1000)+'k';
+    ctx.fillText(v,pad.l-6,y);
+  }
+  // x labels
+  ctx.fillStyle='rgba(122,122,154,0.6)';ctx.font='10px Inter';ctx.textAlign='center';ctx.textBaseline='top';
+  for (let i=0;i<days;i+=5){
+    const x=pad.l+cw*(i/(days-1));
+    ctx.fillText('-'+(days-1-i)+'d',x,H-pad.b+8);
+  }
+  
+  function drawLine(arr,color,fill){
+    ctx.beginPath();
+    arr.forEach((v,i)=>{
+      const x=pad.l+cw*(i/(days-1));
+      const y=pad.t+ch*(1-v/max);
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    // fill underneath
+    ctx.lineTo(pad.l+cw,pad.t+ch);
+    ctx.lineTo(pad.l,pad.t+ch);
+    ctx.closePath();
+    const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+    grad.addColorStop(0,fill+'55');grad.addColorStop(1,fill+'00');
+    ctx.fillStyle=grad;ctx.fill();
+    // line
+    ctx.beginPath();
+    arr.forEach((v,i)=>{
+      const x=pad.l+cw*(i/(days-1));
+      const y=pad.t+ch*(1-v/max);
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle=color;ctx.lineWidth=2;
+    ctx.shadowColor=color;ctx.shadowBlur=8;
+    ctx.stroke();
+    ctx.shadowBlur=0;
+  }
+  drawLine(depData,'#00FF88','#00FF88');
+  drawLine(wdData,'#FF2244','#FF2244');
+}
+
+function renderActivity(){
+  const deps=DB.deposits(),wds=DB.withdraws(),users=DB.users();
+  const acts=[];
+  deps.forEach(d=>acts.push({type:'dep',ts:d.submittedAt,text:`<strong>${d.username}</strong> deposited PKR ${d.amount.toLocaleString()} via ${d.method}`}));
+  wds.forEach(w=>acts.push({type:'wd',ts:w.requestedAt,text:`<strong>${w.username}</strong> requested withdrawal of PKR ${w.amount.toLocaleString()}`}));
+  users.slice(-5).forEach(u=>acts.push({type:'reg',ts:u.joinedAt,text:`<strong>${u.username}</strong> joined AviaTarr`}));
+  acts.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const list=document.getElementById('actList');
+  if (acts.length===0){list.innerHTML='<div class="empty"><i class="fas fa-inbox"></i>No activity yet</div>';return}
+  const icons={dep:'fa-arrow-down',wd:'fa-arrow-up',tourn:'fa-trophy',reg:'fa-user-plus'};
+  list.innerHTML=acts.slice(0,20).map(a=>`
+    <div class="act-item">
+      <div class="act-icon ${a.type}"><i class="fas ${icons[a.type]}"></i></div>
+      <div class="act-text">${a.text}<div class="act-time">${timeAgo(a.ts)}</div></div>
+    </div>`).join('');
+}
+
+function renderDashboard(){renderKPIs();renderRevenueChart();renderActivity()}
+
+function timeAgo(ts){
+  const d=Date.now()-new Date(ts).getTime();
+  if (d<60000)return 'just now';
+  if (d<3600000)return Math.floor(d/60000)+'m ago';
+  if (d<86400000)return Math.floor(d/3600000)+'h ago';
+  return Math.floor(d/86400000)+'d ago';
+}
+
+/* =====================================================
+   PLAYERS
+   ===================================================== */
+function renderPlayers(){
+  const q=document.getElementById('plSearch').value.toLowerCase();
+  const st=document.getElementById('plStatus').value;
+  let users=DB.users();
+  if (q) users=users.filter(u=>(u.username||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q));
+  if (st) users=users.filter(u=>u.status===st);
+  const body=document.getElementById('plBody');
+  if (users.length===0){body.innerHTML='<tr><td colspan="8" class="empty"><i class="fas fa-user-slash"></i>No players found</td></tr>';return}
+  body.innerHTML=users.map(u=>`
+    <tr>
+      <td><strong>${u.username}</strong></td>
+      <td>${u.email||'-'}</td>
+      <td style="color:var(--green-win);font-weight:600">PKR ${(u.balance||0).toLocaleString()}</td>
+      <td>PKR ${(u.totalDeposited||0).toLocaleString()}</td>
+      <td>PKR ${(u.totalWithdrawn||0).toLocaleString()}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${u.joinedAt?new Date(u.joinedAt).toLocaleDateString():'-'}</td>
+      <td><span class="status-pill ${u.status==='banned'?'s-banned':'s-active'}">${u.status||'active'}</span></td>
+      <td><div class="row-actions">
+        <button class="btn-action btn-view" data-pl-view="${u.id}"><i class="fas fa-eye"></i> View</button>
+        <button class="btn-action btn-edit" data-pl-bal="${u.id}"><i class="fas fa-coins"></i></button>
+        <button class="btn-action btn-reject" data-pl-ban="${u.id}">${u.status==='banned'?'Unban':'Ban'}</button>
+      </div></td>
+    </tr>`).join('');
+}
+document.getElementById('plSearch')?.addEventListener('input',renderPlayers);
+document.getElementById('plStatus')?.addEventListener('change',renderPlayers);
+document.getElementById('plRefresh')?.addEventListener('click',()=>{renderPlayers();showToast('Player list refreshed','info')});
+
+document.addEventListener('click',e=>{
+  const view=e.target.closest('[data-pl-view]');
+  if (view) openPlayerDetail(view.dataset.plView);
+  const bal=e.target.closest('[data-pl-bal]');
+  if (bal) editBalance(bal.dataset.plBal);
+  const ban=e.target.closest('[data-pl-ban]');
+  if (ban) toggleBan(ban.dataset.plBan);
+});
+
+function openPlayerDetail(uid){
+  const u=DB.users().find(x=>String(x.id)===String(uid));
+  if (!u) return;
+  const deps=DB.deposits().filter(d=>String(d.userId)===String(uid));
+  const wds=DB.withdraws().filter(w=>String(w.userId)===String(uid));
+  const html=`
+    <div class="detail-grid">
+      <div class="detail-stat"><div class="l">Balance</div><div class="v green">PKR ${(u.balance||0).toLocaleString()}</div></div>
+      <div class="detail-stat"><div class="l">Total Deposited</div><div class="v gold">PKR ${(u.totalDeposited||0).toLocaleString()}</div></div>
+      <div class="detail-stat"><div class="l">Total Withdrawn</div><div class="v">PKR ${(u.totalWithdrawn||0).toLocaleString()}</div></div>
+      <div class="detail-stat"><div class="l">Biggest Win</div><div class="v gold">PKR ${(u.biggestWin||0).toLocaleString()}</div></div>
+      <div class="detail-stat"><div class="l">Total Wagered</div><div class="v">PKR ${(u.totalWagered||0).toLocaleString()}</div></div>
+      <div class="detail-stat"><div class="l">Tickets</div><div class="v">${u.tickets||0}</div></div>
+    </div>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:14px">
+      <strong style="color:#fff">${u.name||u.username}</strong> · ${u.email||''}<br>
+      Joined ${u.joinedAt?new Date(u.joinedAt).toLocaleString():'-'} · Referral: <code style="color:var(--blue-glow)">${u.referralCode||'-'}</code>
+    </p>
+    <div class="subtabs">
+      <div class="subtab active" data-st="deps">Deposits (${deps.length})</div>
+      <div class="subtab" data-st="wds">Withdrawals (${wds.length})</div>
+      <div class="subtab" data-st="game">Game History</div>
+    </div>
+    <div id="stPane">
+      ${deps.length? '<table class="tbl"><thead><tr><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead><tbody>'+deps.map(d=>`<tr><td>PKR ${d.amount.toLocaleString()}</td><td>${d.method}</td><td>${new Date(d.submittedAt).toLocaleDateString()}</td><td><span class="status-pill s-${d.status}">${d.status}</span></td></tr>`).join('')+'</tbody></table>' :'<div class="empty"><i class="fas fa-inbox"></i>No deposits yet</div>'}
+    </div>`;
+  openModal(`<i class="fas fa-user"></i> ${u.username}`,html,`<button class="btn-sec" onclick="closeModal()">Close</button>`,true);
+  // subtab handlers
+  setTimeout(()=>{
+    document.querySelectorAll('.subtab').forEach(s=>s.addEventListener('click',()=>{
+      document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));
+      s.classList.add('active');
+      const k=s.dataset.st,pane=document.getElementById('stPane');
+      if (k==='deps') pane.innerHTML=deps.length?'<table class="tbl"><thead><tr><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead><tbody>'+deps.map(d=>`<tr><td>PKR ${d.amount.toLocaleString()}</td><td>${d.method}</td><td>${new Date(d.submittedAt).toLocaleDateString()}</td><td><span class="status-pill s-${d.status}">${d.status}</span></td></tr>`).join('')+'</tbody></table>':'<div class="empty"><i class="fas fa-inbox"></i>No deposits yet</div>';
+      if (k==='wds') pane.innerHTML=wds.length?'<table class="tbl"><thead><tr><th>Amount</th><th>Account</th><th>Date</th><th>Status</th></tr></thead><tbody>'+wds.map(w=>`<tr><td>PKR ${w.amount.toLocaleString()}</td><td>${w.accountDetails||'-'}</td><td>${new Date(w.requestedAt).toLocaleDateString()}</td><td><span class="status-pill s-${w.status}">${w.status}</span></td></tr>`).join('')+'</tbody></table>':'<div class="empty"><i class="fas fa-inbox"></i>No withdrawals yet</div>';
+      if (k==='game'){
+        const gh=u.gameHistory||[];
+        pane.innerHTML=gh.length?'<table class="tbl"><thead><tr><th>Round</th><th>Bet</th><th>Cashout</th><th>Result</th></tr></thead><tbody>'+gh.slice(0,20).map(g=>`<tr><td>${g.round||'-'}</td><td>PKR ${g.bet}</td><td>${g.cashout?g.cashout+'x':'-'}</td><td>${g.win?'<span class="status-pill s-approved">+'+g.win+'</span>':'<span class="status-pill s-rejected">Lost</span>'}</td></tr>`).join('')+'</tbody></table>':'<div class="empty"><i class="fas fa-gamepad"></i>No game history yet</div>';
+      }
+    }));
+  });
+}
+
+function editBalance(uid){
+  const u=DB.users().find(x=>String(x.id)===String(uid));
+  if (!u) return;
+  const html=`
+    <p style="color:var(--text-muted);margin-bottom:14px">Current balance: <strong style="color:var(--green-win)">PKR ${(u.balance||0).toLocaleString()}</strong></p>
+    <div class="field-group"><label>New Balance (PKR)</label><input type="number" id="ebVal" value="${u.balance||0}"></div>
+    <div class="field-group"><label>Reason (logged)</label><input type="text" id="ebReason" placeholder="e.g. Manual bonus credit"></div>
+  `;
+  const foot=`<button class="btn-sec" onclick="closeModal()">Cancel</button><button class="btn-pri" id="ebSave">Save</button>`;
+  openModal(`<i class="fas fa-coins"></i> Edit Balance — ${u.username}`,html,foot);
+  setTimeout(()=>{
+    document.getElementById('ebSave').addEventListener('click',()=>{
+      const newVal=parseInt(document.getElementById('ebVal').value,10);
+      const reason=document.getElementById('ebReason').value.trim()||'(no reason)';
+      if (isNaN(newVal)||newVal<0){showToast('Invalid balance amount','error');return}
+      const users=DB.users();const uu=users.find(x=>String(x.id)===String(uid));
+      const diff=newVal-(uu.balance||0);
+      uu.balance=newVal;
+      DB.saveUsers(users);
+      notifyUser(uid,'Balance Adjusted',`Admin adjusted your balance by ${diff>=0?'+':''}PKR ${diff.toLocaleString()}. Reason: ${reason}`,diff>=0?'success':'warning');
+      audit('balance_adjust',`User ${uu.username} (${uid}): ${diff>=0?'+':''}${diff} | Reason: ${reason}`);
+      showToast(`Balance updated for ${uu.username}`,'success');
+      closeModal();renderPlayers();renderKPIs();
+    });
+  });
+}
+
+function toggleBan(uid){
+  const users=DB.users();const u=users.find(x=>String(x.id)===String(uid));
+  if (!u)return;
+  u.status=u.status==='banned'?'active':'banned';
+  DB.saveUsers(users);
+  notifyUser(uid,u.status==='banned'?'Account Suspended':'Account Reinstated',u.status==='banned'?'Your account has been suspended. Contact support.':'Your account has been restored.',u.status==='banned'?'error':'success');
+  audit('player_'+u.status,`Player ${u.username} (${uid}) → ${u.status}`);
+  showToast(`${u.username} → ${u.status}`,u.status==='banned'?'warning':'success');
+  renderPlayers();
+}
+
+/* =====================================================
+   DEPOSITS
+   ===================================================== */
+function renderDeposits(){
+  const q=document.getElementById('depSearch').value.toLowerCase();
+  const st=document.getElementById('depStatus').value;
+  let deps=DB.deposits().slice().sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
+  if (q) deps=deps.filter(d=>(d.username||'').toLowerCase().includes(q)||(new Date(d.submittedAt).toLocaleDateString()||'').includes(q));
+  if (st) deps=deps.filter(d=>d.status===st);
+  const body=document.getElementById('depBody');
+  if (deps.length===0){body.innerHTML='<tr><td colspan="8" class="empty"><i class="fas fa-inbox"></i>No deposits found</td></tr>';return}
+  body.innerHTML=deps.map(d=>`
+    <tr>
+      <td>${d.status==='pending'?`<input type="checkbox" class="dep-chk" data-id="${d.id}">`:''}</td>
+      <td><strong>${d.username}</strong></td>
+      <td style="color:var(--gold);font-weight:700">PKR ${d.amount.toLocaleString()}</td>
+      <td>${d.method}</td>
+      <td><div class="screenshot-thumb" data-ss="${d.id}"><i class="fas fa-image"></i></div></td>
+      <td style="font-size:12px;color:var(--text-muted)">${timeAgo(d.submittedAt)}</td>
+      <td><span class="status-pill s-${d.status}">${d.status}</span></td>
+      <td>${d.status==='pending'?`<div class="row-actions">
+          <button class="btn-action btn-approve" data-dep-app="${d.id}"><i class="fas fa-check"></i> Approve</button>
+          <button class="btn-action btn-reject" data-dep-rej="${d.id}"><i class="fas fa-times"></i> Reject</button>
+        </div>`:`<span style="color:var(--text-muted);font-size:11px">${d.approvedAt?timeAgo(d.approvedAt):''}${d.reason?' · '+d.reason:''}</span>`}</td>
+    </tr>`).join('');
+}
+document.getElementById('depSearch')?.addEventListener('input',renderDeposits);
+document.getElementById('depStatus')?.addEventListener('change',renderDeposits);
+document.getElementById('depCheckAll')?.addEventListener('change',e=>{
+  document.querySelectorAll('.dep-chk').forEach(c=>c.checked=e.target.checked);
+});
+
+document.addEventListener('click',e=>{
+  const app=e.target.closest('[data-dep-app]');
+  if (app) approveDeposit(parseInt(app.dataset.depApp,10));
+  const rej=e.target.closest('[data-dep-rej]');
+  if (rej) rejectDeposit(parseInt(rej.dataset.depRej,10));
+  const ss=e.target.closest('[data-ss]');
+  if (ss) showScreenshot(parseInt(ss.dataset.ss,10));
+});
+
+function approveDeposit(id){
+  const deps=DB.deposits();const d=deps.find(x=>x.id===id);
+  if (!d||d.status!=='pending') return;
+  d.status='approved';d.approvedAt=new Date().toISOString();
+  // add to user balance
+  const users=DB.users();const u=users.find(x=>String(x.id)===String(d.userId));
+  if (u){
+    u.balance=(u.balance||0)+d.amount;
+    u.totalDeposited=(u.totalDeposited||0)+d.amount;
+    if (!u.depositHistory) u.depositHistory=[];
+    u.depositHistory.unshift({amount:d.amount,method:d.method,date:d.approvedAt});
+    notifyUser(u.id,'Deposit Approved',`Your deposit of PKR ${d.amount.toLocaleString()} via ${d.method} has been approved and credited.`,'success');
+  }
+  DB.saveUsers(users);DB.saveDeposits(deps);
+  audit('deposit_approve',`Deposit #${id} (${d.username}, PKR ${d.amount}) approved`);
+  showToast(`Deposit of PKR ${d.amount.toLocaleString()} approved`,'success');
+  renderDeposits();renderKPIs();
+}
+
+function rejectDeposit(id){
+  const deps=DB.deposits();const d=deps.find(x=>x.id===id);
+  if (!d||d.status!=='pending') return;
+  const html=`<div class="field-group"><label>Rejection Reason</label><input type="text" id="rejReason" placeholder="e.g. Invalid screenshot, mismatched amount..."></div>`;
+  openModal('<i class="fas fa-times-circle"></i> Reject Deposit',html,`<button class="btn-sec" onclick="closeModal()">Cancel</button><button class="btn-pri" id="confirmRej" style="background:linear-gradient(135deg,var(--red-crash),#aa0022);color:#fff">Reject</button>`);
+  setTimeout(()=>{
+    document.getElementById('confirmRej').addEventListener('click',()=>{
+      const reason=document.getElementById('rejReason').value.trim()||'No reason provided';
+      d.status='rejected';d.reason=reason;d.approvedAt=new Date().toISOString();
+      DB.saveDeposits(deps);
+      notifyUser(d.userId,'Deposit Rejected',`Your deposit of PKR ${d.amount.toLocaleString()} was rejected. Reason: ${reason}`,'error');
+      audit('deposit_reject',`Deposit #${id} (${d.username}, PKR ${d.amount}) rejected | ${reason}`);
+      showToast('Deposit rejected','warning');
+      closeModal();renderDeposits();renderKPIs();
+    });
+  });
+}
+
+function showScreenshot(id){
+  const d=DB.deposits().find(x=>x.id===id);
+  if (!d) return;
+  openModal('<i class="fas fa-image"></i> Payment Screenshot',
+    `<div class="screenshot-preview">
+      <i class="fas fa-receipt"></i>
+      <div>${d.screenshot||'screenshot.jpg'}</div>
+      <div class="info">PKR ${d.amount.toLocaleString()}</div>
+      <div class="meta">
+        Method: <strong style="color:#fff">${d.method}</strong><br>
+        Player: <strong style="color:#fff">${d.username}</strong><br>
+        Submitted: ${new Date(d.submittedAt).toLocaleString()}<br>
+        <em style="color:var(--text-muted);font-size:11px;margin-top:10px;display:block">(Image preview placeholder — actual receipts shown in production)</em>
+      </div>
+    </div>`,
+    `<button class="btn-sec" onclick="closeModal()">Close</button>`,true);
+}
+
+document.getElementById('bulkApprove')?.addEventListener('click',()=>{
+  const ids=Array.from(document.querySelectorAll('.dep-chk:checked')).map(c=>parseInt(c.dataset.id,10));
+  if (ids.length===0){showToast('No deposits selected','warning');return}
+  ids.forEach(approveDeposit);
+  showToast(`${ids.length} deposits approved`,'success');
+});
+
+document.getElementById('depAddDemo')?.addEventListener('click',()=>{
+  const users=DB.users();
+  if (users.length===0){showToast('Seed demo users first','warning');return}
+  const u=users[Math.floor(Math.random()*users.length)];
+  const deps=DB.deposits();
+  deps.push({id:Date.now(),userId:u.id,username:u.username,amount:[500,1000,2000,5000,10000][Math.floor(Math.random()*5)],method:['EasyPaisa','JazzCash','HBL','USDT'][Math.floor(Math.random()*4)],screenshot:'receipt-'+Math.floor(Math.random()*9999)+'.jpg',submittedAt:new Date().toISOString(),status:'pending'});
+  DB.saveDeposits(deps);
+  showToast('Demo deposit added','info');
+  renderDeposits();renderKPIs();
+});
+
+/* =====================================================
+   WITHDRAWALS
+   ===================================================== */
+function renderWithdrawals(){
+  const q=document.getElementById('wdSearch').value.toLowerCase();
+  const st=document.getElementById('wdStatus').value;
+  let wds=DB.withdraws().slice().sort((a,b)=>new Date(b.requestedAt)-new Date(a.requestedAt));
+  if (q) wds=wds.filter(w=>(w.username||'').toLowerCase().includes(q));
+  if (st) wds=wds.filter(w=>w.status===st);
+  const body=document.getElementById('wdBody');
+  if (wds.length===0){body.innerHTML='<tr><td colspan="6" class="empty"><i class="fas fa-inbox"></i>No withdrawals found</td></tr>';return}
+  body.innerHTML=wds.map(w=>`
+    <tr>
+      <td><strong>${w.username}</strong></td>
+      <td style="color:var(--gold);font-weight:700">PKR ${w.amount.toLocaleString()}</td>
+      <td style="font-size:12px">${w.method}<br><code style="color:var(--blue-glow)">${w.accountDetails||'-'}</code></td>
+      <td style="font-size:12px;color:var(--text-muted)">${timeAgo(w.requestedAt)}</td>
+      <td><span class="status-pill s-${w.status}">${w.status}</span></td>
+      <td>${w.status==='pending'?`<div class="row-actions">
+          <button class="btn-action btn-approve" data-wd-app="${w.id}"><i class="fas fa-check"></i> Approve</button>
+          <button class="btn-action btn-reject" data-wd-rej="${w.id}"><i class="fas fa-times"></i> Reject</button>
+        </div>`:`<span style="color:var(--text-muted);font-size:11px">${w.proofNote?'Ref: '+w.proofNote:''}</span>`}</td>
+    </tr>`).join('');
+}
+document.getElementById('wdSearch')?.addEventListener('input',renderWithdrawals);
+document.getElementById('wdStatus')?.addEventListener('change',renderWithdrawals);
+
+document.addEventListener('click',e=>{
+  const app=e.target.closest('[data-wd-app]');
+  if (app) approveWithdraw(parseInt(app.dataset.wdApp,10));
+  const rej=e.target.closest('[data-wd-rej]');
+  if (rej) rejectWithdraw(parseInt(rej.dataset.wdRej,10));
+});
+
+function approveWithdraw(id){
+  const wds=DB.withdraws();const w=wds.find(x=>x.id===id);
+  if (!w||w.status!=='pending') return;
+  const html=`<div class="field-group"><label>Payment Proof Note (Transaction ID, etc.)</label><input type="text" id="wdProof" placeholder="e.g. TXN123456789"></div>`;
+  openModal('<i class="fas fa-check-circle"></i> Approve Withdrawal',html,`<button class="btn-sec" onclick="closeModal()">Cancel</button><button class="btn-pri" id="confirmWdApp">Approve</button>`);
+  setTimeout(()=>{
+    document.getElementById('confirmWdApp').addEventListener('click',()=>{
+      const proof=document.getElementById('wdProof').value.trim()||'';
+      w.status='approved';w.proofNote=proof;w.approvedAt=new Date().toISOString();
+      const users=DB.users();const u=users.find(x=>String(x.id)===String(w.userId));
+      if (u){
+        if (!w.deducted){
+          u.balance=Math.max(0,(u.balance||0)-w.amount);
+          w.deducted=true;
+        }
+        u.totalWithdrawn=(u.totalWithdrawn||0)+w.amount;
+        notifyUser(u.id,'Withdrawal Approved',`Your withdrawal of PKR ${w.amount.toLocaleString()} has been processed. ${proof?'Ref: '+proof:''}`,'success');
+      }
+      DB.saveUsers(users);DB.saveWithdraws(wds);
+      audit('withdraw_approve',`Withdrawal #${id} (${w.username}, PKR ${w.amount}) approved | Proof: ${proof}`);
+      showToast('Withdrawal approved','success');
+      closeModal();renderWithdrawals();renderKPIs();
+    });
+  });
+}
+
+function rejectWithdraw(id){
+  const wds=DB.withdraws();const w=wds.find(x=>x.id===id);
+  if (!w||w.status!=='pending') return;
+  const html=`<div class="field-group"><label>Rejection Reason</label><input type="text" id="wdRejReason" placeholder="e.g. Invalid account details..."></div>`;
+  openModal('<i class="fas fa-times-circle"></i> Reject Withdrawal',html,`<button class="btn-sec" onclick="closeModal()">Cancel</button><button class="btn-pri" id="confirmWdRej" style="background:linear-gradient(135deg,var(--red-crash),#aa0022);color:#fff">Reject</button>`);
+  setTimeout(()=>{
+    document.getElementById('confirmWdRej').addEventListener('click',()=>{
+      const reason=document.getElementById('wdRejReason').value.trim()||'No reason provided';
+      w.status='rejected';w.reason=reason;
+      const users=DB.users();const u=users.find(x=>String(x.id)===String(w.userId));
+      if (u && w.deducted){
+        u.balance=(u.balance||0)+w.amount;
+        w.deducted=false;
+      }
+      if (u) notifyUser(u.id,'Withdrawal Rejected',`Your withdrawal of PKR ${w.amount.toLocaleString()} was rejected. Reason: ${reason}. Funds returned to your balance.`,'error');
+      DB.saveUsers(users);DB.saveWithdraws(wds);
+      audit('withdraw_reject',`Withdrawal #${id} (${w.username}, PKR ${w.amount}) rejected | ${reason}`);
+      showToast('Withdrawal rejected. Funds refunded.','warning');
+      closeModal();renderWithdrawals();renderKPIs();
+    });
+  });
+}
+
+document.getElementById('wdAddDemo')?.addEventListener('click',()=>{
+  const users=DB.users();
+  if (users.length===0){showToast('Seed demo users first','warning');return}
+  const u=users[Math.floor(Math.random()*users.length)];
+  const wds=DB.withdraws();
+  wds.push({id:Date.now(),userId:u.id,username:u.username,amount:[1000,3000,5000,10000][Math.floor(Math.random()*4)],method:['EasyPaisa','JazzCash','Bank'][Math.floor(Math.random()*3)],accountDetails:'03'+(Math.floor(Math.random()*90000000)+10000000),requestedAt:new Date().toISOString(),status:'pending',deducted:true});
+  DB.saveWithdraws(wds);
+  showToast('Demo withdrawal added','info');
+  renderWithdrawals();renderKPIs();
+});
+
+/* =====================================================
+   TOURNAMENTS
+   ===================================================== */
+function renderTournaments(){
+  const tns=DB.tournys();
+  const body=document.getElementById('tournyBody');
+  if (tns.length===0){body.innerHTML='<tr><td colspan="7" class="empty"><i class="fas fa-trophy"></i>No tournaments yet. Create one!</td></tr>';return}
+  body.innerHTML=tns.map(t=>`
+    <tr>
+      <td><strong>${t.name}</strong></td>
+      <td><span class="status-pill" style="background:rgba(0,212,255,0.1);color:var(--blue-glow)">${t.type||'OPEN'}</span></td>
+      <td style="color:var(--gold);font-weight:700">PKR ${(t.prizePool||0).toLocaleString()}</td>
+      <td>${t.currentPlayers||0} / ${t.maxPlayers||0}</td>
+      <td style="font-size:12px">${t.startsAt?new Date(t.startsAt).toLocaleString():'-'}</td>
+      <td>
+        <span class="status-pill ${t.status==='live'?'s-live':t.status==='ended'?'s-rejected':'s-approved'}">${t.status||'upcoming'}</span>
+        <div class="toggle ${t.status==='live'?'on':''}" style="margin-top:6px;display:inline-block" data-toggle-tn="${t.id}" title="Toggle live"></div>
+      </td>
+      <td><div class="row-actions">
+        <button class="btn-action btn-edit" data-tn-edit="${t.id}"><i class="fas fa-edit"></i></button>
+        <button class="btn-action btn-view" data-tn-players="${t.id}"><i class="fas fa-users"></i></button>
+        <button class="btn-action btn-reject" data-tn-end="${t.id}"><i class="fas fa-stop"></i> End</button>
+      </div></td>
+    </tr>`).join('');
+}
+document.addEventListener('click',e=>{
+  const tEdit=e.target.closest('[data-tn-edit]');
+  if (tEdit) editTournament(parseInt(tEdit.dataset.tnEdit,10));
+  const tPl=e.target.closest('[data-tn-players]');
+  if (tPl) viewTournyPlayers(parseInt(tPl.dataset.tnPlayers,10));
+  const tEnd=e.target.closest('[data-tn-end]');
+  if (tEnd) endTournament(parseInt(tEnd.dataset.tnEnd,10));
+  const tTog=e.target.closest('[data-toggle-tn]');
+  if (tTog) toggleTournyStatus(parseInt(tTog.dataset.toggleTn,10));
+});
+function toggleTournyStatus(id){
+  const tns=DB.tournys();const t=tns.find(x=>x.id===id);if(!t)return;
+  t.status=t.status==='live'?'upcoming':'live';
+  DB.saveTournys(tns);
+  audit('tournament_toggle',`${t.name} → ${t.status}`);
+  showToast(`${t.name} is now ${t.status}`,'info');
+  renderTournaments();renderKPIs();
+}
+function endTournament(id){
+  const tns=DB.tournys();const t=tns.find(x=>x.id===id);if(!t)return;
+  if (!confirm(`End "${t.name}" and trigger prize distribution?`))return;
+  t.status='ended';t.endedAt=new Date().toISOString();
+  DB.saveTournys(tns);
+  audit('tournament_end',`${t.name} (#${id}) ended manually with prize distribution`);
+  showToast(`Tournament ended. Prizes distributed.`,'success');
+  renderTournaments();renderKPIs();
+}
+function viewTournyPlayers(id){
+  const t=DB.tournys().find(x=>x.id===id);if(!t)return;
+  const users=DB.users().slice(0, t.currentPlayers||10);
+  const html=`<table class="tbl"><thead><tr><th>#</th><th>Player</th><th>Joined</th><th>Best Score</th><th>Actions</th></tr></thead><tbody>${users.map((u,i)=>`<tr><td>${i+1}</td><td><strong>${u.username}</strong></td><td style="font-size:12px;color:var(--text-muted)">${timeAgo(u.joinedAt)}</td><td>${(Math.random()*20+1).toFixed(2)}x</td><td><button class="btn-action btn-reject">Remove</button></td></tr>`).join('')}</tbody></table>`;
+  openModal(`<i class="fas fa-users"></i> Players — ${t.name}`,html,`<button class="btn-sec" onclick="closeModal()">Close</button>`,true);
+}
+
+function editTournament(id){
+  const tns=DB.tournys();const t=id?tns.find(x=>x.id===id):{id:null,name:'',type:'OPEN',prizePool:10000,entryFee:0,maxPlayers:50,currentPlayers:0,startsAt:'',status:'upcoming',prizeTiers:[{rank:'1st',amount:5000}]};
+  const html=`
+    <div class="field-group"><label>Tournament Name</label><input type="text" id="tnName" value="${t.name||''}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="field-group"><label>Type</label><input type="text" id="tnType" value="${t.type||'OPEN'}"></div>
+      <div class="field-group"><label>Status</label><select id="tnStatus"><option value="upcoming" ${t.status==='upcoming'?'selected':''}>Upcoming</option><option value="live" ${t.status==='live'?'selected':''}>Live</option><option value="ended" ${t.status==='ended'?'selected':''}>Ended</option></select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div class="field-group"><label>Prize Pool (PKR)</label><input type="number" id="tnPrize" value="${t.prizePool||0}"></div>
+      <div class="field-group"><label>Entry Fee</label><input type="number" id="tnEntry" value="${t.entryFee||0}"></div>
+      <div class="field-group"><label>Max Players</label><input type="number" id="tnMax" value="${t.maxPlayers||50}"></div>
+    </div>
+    <div class="field-group"><label>Starts At</label><input type="datetime-local" id="tnStart" value="${t.startsAt?new Date(t.startsAt).toISOString().slice(0,16):''}"></div>
+    <div class="field-group">
+      <label>Prize Tiers</label>
+      <div class="tier-list" id="tierList"></div>
+      <button class="btn-sec" id="addTier" style="font-size:11px;padding:6px 12px"><i class="fas fa-plus"></i> Add Tier</button>
+    </div>
+  `;
+  const foot=`<button class="btn-sec" onclick="closeModal()">Cancel</button><button class="btn-pri" id="tnSave">${id?'Update':'Create'}</button>`;
+  openModal(`<i class="fas fa-trophy"></i> ${id?'Edit Tournament':'Create Tournament'}`,html,foot,true);
+  setTimeout(()=>{
+    function renderTiers(){
+      const list=document.getElementById('tierList');
+      list.innerHTML=(t.prizeTiers||[]).map((p,i)=>`<div class="tier-row"><input value="${p.rank}" data-ti="r-${i}" placeholder="Rank (e.g. 1st)"><input type="number" value="${p.amount}" data-ti="a-${i}" placeholder="Amount"><i class="fas fa-trash rm" data-rmt="${i}"></i></div>`).join('');
+      list.querySelectorAll('.rm').forEach(b=>b.addEventListener('click',()=>{t.prizeTiers.splice(parseInt(b.dataset.rmt,10),1);renderTiers()}));
+    }
+    renderTiers();
+    document.getElementById('addTier').addEventListener('click',()=>{(t.prizeTiers=t.prizeTiers||[]).push({rank:'',amount:0});renderTiers()});
+    document.getElementById('tnSave').addEventListener('click',()=>{
+      const tiers=[];
+      document.querySelectorAll('#tierList .tier-row').forEach(r=>{
+        const rank=r.querySelector('[data-ti^=r-]').value.trim();
+        const amt=parseInt(r.querySelector('[data-ti^=a-]').value,10)||0;
+        if (rank) tiers.push({rank,amount:amt});
+      });
+      const data={
+        id:id||Date.now(),
+        name:document.getElementById('tnName').value.trim(),
+        type:document.getElementById('tnType').value.trim()||'OPEN',
+        status:document.getElementById('tnStatus').value,
+        prizePool:parseInt(document.getElementById('tnPrize').value,10)||0,
+        entryFee:parseInt(document.getElementById('tnEntry').value,10)||0,
+        maxPlayers:parseInt(document.getElementById('tnMax').value,10)||50,
+        currentPlayers:t.currentPlayers||0,
+        startsAt:document.getElementById('tnStart').value?new Date(document.getElementById('tnStart').value).toISOString():null,
+        prizeTiers:tiers
+      };
+      if (!data.name){showToast('Name is required','error');return}
+      if (id){const idx=tns.findIndex(x=>x.id===id);tns[idx]=data}
+      else tns.push(data);
+      DB.saveTournys(tns);
+      audit(id?'tournament_edit':'tournament_create',`${data.name} (PKR ${data.prizePool})`);
+      showToast(`Tournament ${id?'updated':'created'}`,'success');
+      closeModal();renderTournaments();renderKPIs();
+    });
+  });
+}
+document.getElementById('newTournyBtn')?.addEventListener('click',()=>editTournament(null));
+
+/* =====================================================
+   SETTINGS
+   ===================================================== */
+function loadSettingsUI(){
+  const s=DB.settings();
+  document.getElementById('houseEdge').value=s.houseEdge;
+  document.getElementById('houseEdgeVal').textContent=s.houseEdge+'%';
+  document.getElementById('minBet').value=s.minBet;
+  document.getElementById('maxBet').value=s.maxBet;
+  document.getElementById('tMaintenance').classList.toggle('on',!!s.maintenance);
+  document.getElementById('fakeMin').value=s.fakeMin;
+  document.getElementById('fakeMax').value=s.fakeMax;
+  document.getElementById('tickerText').value=s.tickerText||'';
+  const pmList=document.getElementById('pmList');
+  const pmNames={easypaisa:'EasyPaisa',jazzcash:'JazzCash',bank:'Bank Transfer',crypto:'USDT / Crypto',hbl:'HBL Bank',mcb:'MCB Bank'};
+  pmList.innerHTML=Object.keys(pmNames).map(k=>`<div class="set-row"><div class="set-info"><strong>${pmNames[k]}</strong></div><div class="set-control"><div class="toggle ${s.paymentMethods&&s.paymentMethods[k]?'on':''}" data-pm="${k}"></div></div></div>`).join('');
+  pmList.querySelectorAll('[data-pm]').forEach(t=>t.addEventListener('click',()=>{
+    t.classList.toggle('on');
+    const s2=DB.settings();
+    if (!s2.paymentMethods) s2.paymentMethods={};
+    s2.paymentMethods[t.dataset.pm]=t.classList.contains('on');
+    DB.saveSettings(s2);
+    audit('settings_pm',`${t.dataset.pm} → ${t.classList.contains('on')?'enabled':'disabled'}`);
+  }));
+}
+document.getElementById('houseEdge')?.addEventListener('input',e=>document.getElementById('houseEdgeVal').textContent=e.target.value+'%');
+document.getElementById('tMaintenance')?.addEventListener('click',e=>e.currentTarget.classList.toggle('on'));
+document.getElementById('saveSettingsBtn')?.addEventListener('click',()=>{
+  const s=DB.settings();
+  s.houseEdge=parseFloat(document.getElementById('houseEdge').value);
+  s.minBet=parseInt(document.getElementById('minBet').value,10);
+  s.maxBet=parseInt(document.getElementById('maxBet').value,10);
+  s.maintenance=document.getElementById('tMaintenance').classList.contains('on');
+  s.fakeMin=parseInt(document.getElementById('fakeMin').value,10);
+  s.fakeMax=parseInt(document.getElementById('fakeMax').value,10);
+  s.tickerText=document.getElementById('tickerText').value;
+  DB.saveSettings(s);
+  audit('settings_save',`Saved global settings: edge=${s.houseEdge}%, maint=${s.maintenance}`);
+  showToast('Settings saved','success');
+});
+
+/* =====================================================
+   ANNOUNCEMENTS
+   ===================================================== */
+function renderAnnouncements(){
+  const ann=DB.announce();
+  const list=document.getElementById('annList');
+  if (ann.length===0){list.innerHTML='<div class="empty"><i class="fas fa-bullhorn"></i>No announcements published yet</div>';return}
+  list.innerHTML=ann.map(a=>`
+    <div class="set-row">
+      <div class="set-info">
+        <strong>${a.title} <span class="status-pill" style="margin-left:8px;background:rgba(${a.type==='warning'?'255,215,0':a.type==='promo'?'139,0,255':'0,212,255'},0.15);color:var(--${a.type==='warning'?'gold':a.type==='promo'?'purple-glow':'blue-glow'});border:1px solid currentColor;font-size:10px">${a.type}</span></strong>
+        <span>${a.msg} ${a.expiry?`· Expires ${new Date(a.expiry).toLocaleDateString()}`:''}</span>
+      </div>
+      <div class="set-control">
+        <button class="btn-action btn-reject" data-ann-del="${a.id}"><i class="fas fa-trash"></i> Delete</button>
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('[data-ann-del]').forEach(b=>b.addEventListener('click',()=>{
+    const arr=DB.announce().filter(x=>String(x.id)!==b.dataset.annDel);
+    DB.saveAnnounce(arr);
+    audit('announce_delete',b.dataset.annDel);
+    showToast('Announcement deleted','info');
+    renderAnnouncements();
+  }));
+}
+document.getElementById('annCreate')?.addEventListener('click',()=>{
+  const title=document.getElementById('annTitle').value.trim();
+  const msg=document.getElementById('annMsg').value.trim();
+  const type=document.getElementById('annType').value;
+  const expiry=document.getElementById('annExpiry').value;
+  if (!title || !msg){showToast('Title and message are required','error');return}
+  const ann=DB.announce();
+  ann.unshift({id:Date.now(),title,msg,type,expiry:expiry||null,createdAt:new Date().toISOString()});
+  DB.saveAnnounce(ann);
+  // also notify all users
+  const users=DB.users();
+  users.forEach(u=>{if(!u.notifications)u.notifications=[];u.notifications.unshift({id:Date.now()+Math.random(),title:'📢 '+title,msg,type,read:false,ts:new Date().toISOString()})});
+  DB.saveUsers(users);
+  audit('announce_create',title);
+  showToast('Announcement published to all users','success');
+  document.getElementById('annTitle').value='';
+  document.getElementById('annMsg').value='';
+  document.getElementById('annExpiry').value='';
+  renderAnnouncements();
+});
+
+/* =====================================================
+   INIT
+   ===================================================== */
+function renderAll(){renderKPIs();renderRevenueChart();renderActivity();renderDeposits();renderWithdrawals();renderPlayers();renderTournaments();renderAnnouncements();loadSettingsUI()}
+function initPanel(){
+  // Auto-seed on first ever load so admin sees something
+  const existingDeps=DB.deposits().length;
+  if (DB.users().length<3 && existingDeps===0){
+    seedDemo();
+    showToast('Welcome! Demo data has been seeded for you.','info');
+  }
+  renderAll();
+  // periodic refresh of dashboard
+  setInterval(()=>{if(document.getElementById('pane-dashboard').classList.contains('active'))renderKPIs()},10000);
+}
+window.closeModal=closeModal; // expose for inline onclicks
+</script>
+</body>
+</html>

@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AviaTarr — Login & Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* ============================================================
+   DESIGN TOKENS
+============================================================ */
+:root {
+  --bg-void: #05050A;
+  --bg-dark: #0A0A14;
+  --bg-card: #0F0F1E;
+  --bg-glass: rgba(255,255,255,0.04);
+  --blue-glow: #00D4FF;
+  --purple-glow: #8B00FF;
+  --gold: #FFD700;
+  --gold-dark: #CC9900;
+  --red-crash: #FF2244;
+  --green-win: #00FF88;
+  --text-primary: #FFFFFF;
+  --text-muted: #7A7A9A;
+  --border-glow: rgba(0,212,255,0.3);
+  --shadow-blue: 0 0 30px rgba(0,212,255,0.4);
+  --shadow-gold: 0 0 30px rgba(255,215,0,0.5);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-void); color: var(--text-primary);
+  font-family: 'Inter', sans-serif; min-height: 100vh;
+  overflow-x: hidden; cursor: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ============================================================
+   CUSTOM CURSOR
+============================================================ */
+#cursor-dot {
+  position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+  background: #fff; border-radius: 50%; pointer-events: none;
+  z-index: 99999; transform: translate(-50%,-50%);
+}
+#cursor-ring {
+  position: fixed; top: 0; left: 0; width: 28px; height: 28px;
+  border: 1.5px solid rgba(255,255,255,0.5); border-radius: 50%;
+  pointer-events: none; z-index: 99998; transform: translate(-50%,-50%);
+  transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+#cursor-ring.hover-btn { width: 44px; height: 44px; border-color: var(--gold); background: rgba(255,215,0,0.08); }
+
+/* ============================================================
+   PAGE LOADER
+============================================================ */
+#page-loader {
+  position: fixed; inset: 0; background: var(--bg-void);
+  z-index: 99997; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 20px;
+  transition: transform 0.7s cubic-bezier(0.76,0,0.24,1);
+}
+#page-loader.done { transform: translateY(-100%); }
+.loader-logo {
+  font-family: 'Orbitron', sans-serif; font-size: 36px; font-weight: 900;
+  animation: loaderFadeIn 0.8s ease forwards;
+}
+.loader-logo span { color: var(--blue-glow); text-shadow: 0 0 20px var(--blue-glow); }
+.loader-plane { font-size: 28px; opacity: 0; animation: loaderFly 1.5s ease-in-out forwards 0.5s; }
+.loader-bar { width: 200px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.loader-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--blue-glow), var(--gold)); animation: loaderFillAnim 2s ease forwards; }
+
+@keyframes loaderFadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes loaderFly {
+  0% { opacity: 0; transform: translateX(-60px) translateY(10px) rotate(-15deg); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(120px) translateY(-30px) rotate(15deg); }
+}
+@keyframes loaderFillAnim { 0% { width: 0; } 100% { width: 100%; } }
+
+/* ============================================================
+   TOASTS
+============================================================ */
+#toast-container {
+  position: fixed; top: 24px; right: 20px; z-index: 99990;
+  display: flex; flex-direction: column; gap: 10px; width: 320px;
+}
+.toast {
+  background: var(--bg-card); border-radius: 12px; padding: 14px 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transform: translateX(100%); opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  position: relative; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08); cursor: none;
+}
+.toast.show { transform: translateX(0); opacity: 1; }
+.toast.hide { transform: translateX(110%); opacity: 0; }
+.toast-content { display: flex; align-items: flex-start; gap: 10px; }
+.toast-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.toast-msg { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+.toast-progress { position: absolute; bottom: 0; left: 0; height: 2px; width: 100%; animation: toastProg 3.5s linear forwards; }
+.toast.success { border-left: 3px solid var(--green-win); }
+.toast.success .toast-progress { background: var(--green-win); }
+.toast.error { border-left: 3px solid var(--red-crash); }
+.toast.error .toast-progress { background: var(--red-crash); }
+.toast.info { border-left: 3px solid var(--blue-glow); }
+.toast.info .toast-progress { background: var(--blue-glow); }
+.toast.warning { border-left: 3px solid var(--gold); }
+.toast.warning .toast-progress { background: var(--gold); }
+@keyframes toastProg { from { width: 100%; } to { width: 0%; } }
+
+/* ============================================================
+   BACKGROUND CANVAS
+============================================================ */
+#bg-canvas {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
+
+/* ============================================================
+   PAGE LAYOUT
+============================================================ */
+.page-wrap {
+  position: relative; z-index: 1; min-height: 100vh;
+  display: flex; align-items: stretch;
+}
+
+/* ============================================================
+   LEFT / AUTH PANEL
+============================================================ */
+.auth-panel {
+  flex: 0 0 auto; width: 100%; max-width: 520px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 40px 32px;
+  min-height: 100vh;
+}
+
+/* Back link */
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600;
+  color: var(--text-muted); text-decoration: none;
+  letter-spacing: 0.05em; margin-bottom: 28px;
+  transition: color 0.2s;
+  align-self: flex-start;
+}
+.back-link:hover { color: var(--blue-glow); }
+
+/* Auth card */
+.auth-card {
+  width: 100%; max-width: 460px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
+  position: relative; overflow: hidden;
+}
+/* Spinning glow border */
+.auth-card::before {
+  content: ''; position: absolute; inset: -2px; z-index: -1;
+  background: conic-gradient(from var(--glow-angle, 0deg),
+    var(--blue-glow) 0%, transparent 30%,
+    var(--purple-glow) 50%, transparent 80%,
+    var(--gold) 90%, transparent 100%);
+  border-radius: inherit;
+  animation: glowSpin 5s linear infinite;
+}
+@property --glow-angle { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+@keyframes glowSpin { to { --glow-angle: 360deg; } }
+
+.auth-card-inner { padding: 36px 40px 40px; }
+
+/* Logo */
+.auth-logo {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  text-decoration: none; margin-bottom: 28px;
+}
+.auth-logo-icon svg { width: 36px; height: 36px; }
+.auth-logo-icon { animation: planeBob 3s ease-in-out infinite; }
+@keyframes planeBob { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-4px) rotate(5deg); } }
+.auth-logo-name { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 26px; letter-spacing: 0.08em; }
+.auth-logo-name .blue { color: var(--blue-glow); text-shadow: 0 0 15px var(--blue-glow); }
+
+/* Tabs */
+.auth-tabs { display: flex; gap: 0; margin-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.auth-tab {
+  flex: 1; padding: 12px 0; text-align: center;
+  font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 15px;
+  letter-spacing: 0.1em; text-transform: uppercase; cursor: none;
+  color: var(--text-muted); background: none; border: none;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.3s, border-color 0.3s;
+}
+.auth-tab.active { color: var(--gold); border-color: var(--gold); }
+
+/* Form panels */
+.form-panel { display: none; }
+.form-panel.active { display: block; }
+.form-panel { animation: panelIn 0.35s ease; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ============================================================
+   FLOATING LABEL FIELDS
+============================================================ */
+.field-group { position: relative; margin-bottom: 20px; }
+.field-group label {
+  position: absolute; left: 44px; top: 50%; transform: translateY(-50%);
+  font-size: 14px; color: var(--text-muted); font-family: 'Inter', sans-serif;
+  pointer-events: none;
+  transition: top 0.2s ease, font-size 0.2s ease, color 0.2s ease, transform 0.2s ease, left 0.2s ease;
+  background: transparent;
+}
+.field-group input {
+  width: 100%; padding: 24px 44px 10px 44px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; color: var(--text-primary); font-size: 15px;
+  font-family: 'Inter', sans-serif; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  -webkit-appearance: none;
+}
+.field-group input:focus {
+  border-color: var(--blue-glow);
+  box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+  background: rgba(0,212,255,0.03);
+}
+.field-group input:focus + label,
+.field-group input:not(:placeholder-shown) + label {
+  top: 12px; transform: translateY(0); font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; left: 44px;
+}
+.field-group input:focus + label { color: var(--blue-glow); }
+.field-group input::placeholder { color: transparent; }
+
+/* Field icons */
+.field-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 16px; pointer-events: none;
+  transition: color 0.2s;
+}
+.field-group:focus-within .field-icon { color: var(--blue-glow); }
+
+/* Validation indicator */
+.field-valid {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  font-size: 16px; pointer-events: none; opacity: 0;
+  transition: opacity 0.2s;
+}
+.field-valid.show { opacity: 1; }
+.field-valid.ok { color: var(--green-win); }
+.field-valid.err { color: var(--red-crash); }
+
+/* Error highlight */
+.field-group.has-error input { border-color: var(--red-crash) !important; box-shadow: 0 0 0 3px rgba(255,34,68,0.12) !important; }
+.field-group.has-success input { border-color: var(--green-win); }
+.field-error-msg {
+  font-size: 11px; color: var(--red-crash); margin-top: 6px;
+  padding-left: 14px; display: none;
+}
+.field-group.has-error .field-error-msg { display: block; }
+
+/* Referral special */
+.field-group.referral input:not(:placeholder-shown) {
+  border-color: rgba(0,212,255,0.4);
+  background: rgba(0,212,255,0.03);
+}
+
+/* Password show/hide */
+.pw-toggle {
+  position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+  cursor: none; color: var(--text-muted); font-size: 16px;
+  background: none; border: none; padding: 4px;
+  transition: color 0.2s;
+}
+.pw-toggle:hover { color: var(--text-primary); }
+
+/* ============================================================
+   PASSWORD STRENGTH METER
+============================================================ */
+.pw-strength-wrap { margin-top: 8px; padding: 0 2px; }
+.pw-strength-bar { display: flex; gap: 4px; margin-bottom: 5px; }
+.pw-seg {
+  flex: 1; height: 3px; border-radius: 3px;
+  background: rgba(255,255,255,0.08); transition: background 0.3s;
+}
+.pw-seg.weak { background: var(--red-crash); }
+.pw-seg.fair { background: #FF8800; }
+.pw-seg.strong { background: var(--blue-glow); }
+.pw-seg.excellent { background: var(--green-win); }
+.pw-strength-label {
+  font-size: 11px; text-align: right; font-family: 'Rajdhani', sans-serif;
+  font-weight: 600; letter-spacing: 0.05em;
+  transition: color 0.3s;
+}
+
+/* ============================================================
+   TERMS CHECKBOX
+============================================================ */
+.checkbox-group {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 24px;
+}
+.checkbox-group input[type="checkbox"] { display: none; }
+.checkbox-custom {
+  width: 20px; height: 20px; flex-shrink: 0; border-radius: 5px;
+  border: 1.5px solid rgba(255,255,255,0.2); cursor: none;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.2s, background 0.2s;
+  margin-top: 1px;
+}
+.checkbox-custom.checked {
+  background: var(--gold); border-color: var(--gold);
+}
+.checkbox-custom i { font-size: 11px; color: #000; display: none; }
+.checkbox-custom.checked i { display: block; }
+.checkbox-label {
+  font-size: 13px; color: var(--text-muted); line-height: 1.5;
+}
+.checkbox-label a { color: var(--gold); text-decoration: none; }
+.checkbox-label a:hover { text-decoration: underline; }
+
+/* ============================================================
+   SUBMIT BUTTONS
+============================================================ */
+.btn-submit {
+  width: 100%; height: 52px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #000; font-family: 'Rajdhani', sans-serif; font-weight: 700;
+  font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: none; position: relative; overflow: hidden;
+  box-shadow: 0 0 20px rgba(255,215,0,0.5), 0 4px 15px rgba(0,0,0,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 35px rgba(255,215,0,0.8), 0 8px 25px rgba(0,0,0,0.4);
+}
+.btn-submit:active { transform: scale(0.98); }
+.btn-submit::after {
+  content: ''; position: absolute; top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg); transition: left 0.5s ease;
+}
+.btn-submit:hover::after { left: 150%; }
+.btn-submit.loading { pointer-events: none; opacity: 0.85; }
+.btn-submit.shake { animation: btnShake 0.5s ease; }
+@keyframes btnShake {
+  0%,100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
+
+/* Dot loader */
+.dots-loader { display: flex; gap: 5px; align-items: center; }
+.dots-loader span {
+  width: 7px; height: 7px; border-radius: 50%; background: #000;
+  animation: dotBounce 0.9s ease-in-out infinite;
+}
+.dots-loader span:nth-child(2) { animation-delay: 0.15s; }
+.dots-loader span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dotBounce { 0%,80%,100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+/* Switch text */
+.auth-switch {
+  text-align: center; margin-top: 24px;
+  font-size: 13px; color: var(--text-muted);
+}
+.auth-switch a { color: var(--gold); text-decoration: none; font-weight: 600; }
+.auth-switch a:hover { text-decoration: underline; }
+
+/* Forgot password */
+.forgot-link {
+  text-align: right; margin-bottom: 8px; margin-top: -10px;
+  font-size: 13px;
+}
+.forgot-link a { color: var(--gold); text-decoration: none; }
+.forgot-link a:hover { text-decoration: underline; }
+
+/* Remember me */
+.remember-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+  font-size: 13px; color: var(--text-muted); cursor: none;
+}
+.remember-row input[type="checkbox"] { display: none; }
+.remember-custom {
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 1.5px solid rgba(255,255,255,0.2); cursor: none;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.2s, background 0.2s; flex-shrink: 0;
+}
+.remember-custom.checked { background: var(--blue-glow); border-color: var(--blue-glow); }
+.remember-custom i { font-size: 10px; color: #000; display: none; }
+.remember-custom.checked i { display: block; }
+
+/* ============================================================
+   RIGHT PANEL — STATS
+============================================================ */
+.stats-panel {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  padding: 60px 60px 60px 20px; position: relative;
+}
+.stats-panel-inner {
+  background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border: 1px solid rgba(0,212,255,0.15);
+  border-radius: 20px; padding: 40px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 60px rgba(0,212,255,0.08), 0 24px 60px rgba(0,0,0,0.4);
+  position: sticky; top: 40px;
+}
+
+.stats-header {
+  font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 18px;
+  color: var(--blue-glow); text-shadow: 0 0 12px var(--blue-glow);
+  margin-bottom: 32px; letter-spacing: 0.06em;
+}
+.stats-header span { color: var(--text-muted); font-size: 12px; font-family: 'Rajdhani', sans-serif; font-weight: 400; display: block; margin-top: 4px; letter-spacing: 0.1em; }
+
+.stat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.stat-row:last-of-type { border-bottom: none; }
+.stat-label { font-family: 'Rajdhani', sans-serif; font-size: 13px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.stat-value { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 700; }
+.stat-value.blue { color: var(--blue-glow); text-shadow: 0 0 10px rgba(0,212,255,0.5); }
+.stat-value.green { color: var(--green-win); text-shadow: 0 0 10px rgba(0,255,136,0.4); }
+.stat-value.gold { color: var(--gold); text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
+.wins-feed { margin-top: 28px; }
+.wins-feed-title {
+  font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.win-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.03); margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+  animation: winSlideIn 0.4s ease;
+}
+@keyframes winSlideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+.win-item-user { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600; }
+.win-item-mult { font-family: 'Orbitron', sans-serif; font-size: 12px; color: var(--green-win); }
+.win-item-amount { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; color: var(--gold); }
+
+/* Online indicator */
+.stats-online {
+  display: flex; align-items: center; gap: 8px; margin-top: 20px;
+  padding: 10px 14px; border-radius: 10px;
+  background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.15);
+}
+.online-dot { width: 8px; height: 8px; background: var(--green-win); border-radius: 50%; box-shadow: 0 0 8px var(--green-win); animation: onlinePulse 2s ease-in-out infinite; }
+@keyframes onlinePulse { 0%,100% { opacity: 1; box-shadow: 0 0 8px var(--green-win); } 50% { opacity: 0.6; box-shadow: 0 0 4px var(--green-win); } }
+.stats-online-text { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600; }
+#stats-online-count { color: var(--green-win); }
+
+/* Decorative glow orb */
+.stats-orb {
+  position: absolute; top: -60px; right: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,255,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   SUCCESS OVERLAY
+============================================================ */
+#success-overlay {
+  position: fixed; inset: 0; background: rgba(5,5,10,0.9);
+  z-index: 99990; display: none;
+  align-items: center; justify-content: center; flex-direction: column;
+  backdrop-filter: blur(10px);
+}
+#success-overlay.show { display: flex; }
+.success-icon {
+  font-size: 72px; margin-bottom: 24px;
+  animation: successBounce 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes successBounce { from { transform: scale(0) rotate(-20deg); } to { transform: scale(1) rotate(0deg); } }
+.success-title { font-family: 'Orbitron', sans-serif; font-size: 32px; font-weight: 900; color: var(--green-win); margin-bottom: 12px; text-shadow: 0 0 30px var(--green-win); }
+.success-sub { font-size: 16px; color: var(--text-muted); margin-bottom: 8px; }
+.success-redirect { font-size: 13px; color: var(--text-muted); }
+#success-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 99989; }
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 1024px) {
+  .stats-panel { display: none; }
+  .auth-panel { max-width: 100%; margin: 0 auto; }
+}
+@media (max-width: 480px) {
+  .auth-card-inner { padding: 28px 24px 32px; }
+  .auth-panel { padding: 24px 16px; }
+}
+</style>
+<script src="shared.js"></script>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- Page Loader -->
+<div id="page-loader">
+  <div class="loader-logo">AVIA<span>TARR</span></div>
+  <div class="loader-plane">✈️</div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Background Canvas -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Success Canvas (confetti) -->
+<canvas id="success-canvas"></canvas>
+
+<!-- Success Overlay -->
+<div id="success-overlay">
+  <div class="success-icon">🚀</div>
+  <div class="success-title" id="success-title">WELCOME ABOARD!</div>
+  <p class="success-sub" id="success-sub">Your account has been created.</p>
+  <p class="success-redirect">Redirecting to your dashboard...</p>
+</div>
+
+<!-- Page Layout -->
+<div class="page-wrap">
+
+  <!-- ============================================================
+       LEFT: AUTH CARD
+  ============================================================ -->
+  <div class="auth-panel">
+    <a href="index.html" class="back-link">
+      <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+
+    <div class="auth-card">
+      <div class="auth-card-inner">
+
+        <!-- Logo -->
+        <a href="index.html" class="auth-logo">
+          <div class="auth-logo-icon">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 38L28 18L44 26L56 14" stroke="#00D4FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M44 26L56 14L50 28L38 30L44 26Z" fill="#00D4FF" fill-opacity="0.8"/>
+              <circle cx="56" cy="14" r="4" fill="#FFD700"/>
+              <path d="M20 38L14 44" stroke="#00D4FF" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="auth-logo-name">AVIA<span class="blue">TARR</span></div>
+        </a>
+
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+          <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- ── LOGIN FORM ── -->
+        <div class="form-panel active" id="panel-login">
+          <div class="field-group">
+            <i class="fas fa-envelope field-icon"></i>
+            <input type="email" id="login-email" placeholder="Email Address" autocomplete="email">
+            <label for="login-email">Email Address</label>
+          </div>
+
+          <div class="field-group">
+            <i class="fas fa-lock field-icon"></i>
+            <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+            <label for="login-password">Password</label>
+            <button type="button" class="pw-toggle" onclick="togglePw('login-password', this)" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+
+          <div class="forgot-link"><a href="#">Forgot Password?</a></div>
+
+          <div class="remember-row" onclick="toggleRemember()">
+            <div class="remember-custom" id="remember-custom">
+              <i class="fas fa-check"></i>
+            </div>
+            <span>Remember me</span>
+          </div>
+
+          <button class="btn-submit" id="login-btn" onclick="handleLogin()">
+            ENTER THE ARENA ✈️
+          </button>
+
+          <p class="auth-switch">New here? <a href="#" onclick="switchTab('register'); return false;">Register for free →</a></p>
+        </div>
+
+        <!-- ── REGISTER FORM ── -->
+        <div class="form-panel" id="panel-register">
+
+          <div class="field-group" id="fg-fullname">
+            <i class="fas fa-user field-icon"></i>
+            <input type="text" id="reg-fullname" placeholder="Full Name" autocomplete="name" oninput="validateFullname()">
+            <label for="reg-fullname">Full Name</label>
+            <span class="field-valid" id="fv-fullname"></span>
+            <span class="field-error-msg">Please enter your full name.</span>
+          </div>
+
+          <div class="field-group" id="fg-username">
+            <i class="fas fa-at field-icon"></i>
+            <input type="text" id="reg-username" placeholder="Username" autocomplete="username"
+              oninput="validateUsername()" maxlength="20">
+            <label for="reg-username">Username</label>
+            <span class="field-valid" id="fv-username"></span>
+            <span class="field-error-msg" id="err-username">4–20 chars, no spaces.</span>
+          </div>
+
+          <div class="field-group" id="fg-email">
+            <i class="fas fa-envelope field-icon"></i>
+            <input type="email" id="reg-email" placeholder="Email Address" autocomplete="email" oninput="validateEmail()">
+            <label for="reg-email">Email Address</label>
+            <span class="field-valid" id="fv-email"></span>
+            <span class="field-error-msg">Enter a valid email address.</span>
+          </div>
+
+          <div class="field-group" id="fg-password">
+            <i class="fas fa-lock field-icon"></i>
+            <input type="password" id="reg-password" placeholder="Password" autocomplete="new-password" oninput="checkStrength(); validatePassword()">
+            <label for="reg-password">Password</label>
+            <button type="button" class="pw-toggle" onclick="togglePw('reg-password', this)" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+            <span class="field-valid" id="fv-password"></span>
+            <span class="field-error-msg">Must be at least 8 characters.</span>
+            <div class="pw-strength-wrap" id="pw-strength-wrap" style="display:none">
+              <div class="pw-strength-bar">
+                <div class="pw-seg" id="seg1"></div>
+                <div class="pw-seg" id="seg2"></div>
+                <div class="pw-seg" id="seg3"></div>
+                <div class="pw-seg" id="seg4"></div>
+              </div>
+              <div class="pw-strength-label" id="pw-label">Weak</div>
+            </div>
+          </div>
+
+          <div class="field-group" id="fg-confirm">
+            <i class="fas fa-shield-alt field-icon"></i>
+            <input type="password" id="reg-confirm" placeholder="Confirm Password" autocomplete="new-password" oninput="validateConfirm()">
+            <label for="reg-confirm">Confirm Password</label>
+            <button type="button" class="pw-toggle" onclick="togglePw('reg-confirm', this)" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+            <span class="field-valid" id="fv-confirm"></span>
+            <span class="field-error-msg">Passwords do not match.</span>
+          </div>
+
+          <div class="field-group referral" id="fg-referral">
+            <i class="fas fa-gift field-icon"></i>
+            <input type="text" id="reg-referral" placeholder="Referral Code (optional)" maxlength="10">
+            <label for="reg-referral">Referral Code (Optional)</label>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="terms-check">
+            <div class="checkbox-custom" id="terms-custom" onclick="toggleTerms()">
+              <i class="fas fa-check"></i>
+            </div>
+            <label class="checkbox-label">I agree to the <a href="#">Terms of Service</a> and confirm I am <strong>18+ years old</strong></label>
+          </div>
+
+          <button class="btn-submit" id="register-btn" onclick="handleRegister()">
+            CREATE MY ACCOUNT 🚀
+          </button>
+
+          <p class="auth-switch">Already have an account? <a href="#" onclick="switchTab('login'); return false;">Login →</a></p>
+        </div>
+
+      </div><!-- /auth-card-inner -->
+    </div><!-- /auth-card -->
+  </div><!-- /auth-panel -->
+
+  <!-- ============================================================
+       RIGHT: STATS PANEL
+  ============================================================ -->
+  <div class="stats-panel">
+    <div class="stats-orb"></div>
+    <div class="stats-panel-inner">
+      <div class="stats-header">
+        LIVE ARENA STATS
+        <span>UPDATED IN REAL-TIME</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">Players Online</span>
+        <span class="stat-value blue" id="stat-online">12,847</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Paid Out Today</span>
+        <span class="stat-value green" id="stat-paidout">PKR 2,450,000</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Current Jackpot</span>
+        <span class="stat-value gold" id="stat-jackpot">PKR 50,000</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Active Tournaments</span>
+        <span class="stat-value blue">4</span>
+      </div>
+
+      <div class="wins-feed">
+        <div class="wins-feed-title">🔴 Latest Big Wins</div>
+        <div id="wins-list"></div>
+      </div>
+
+      <div class="stats-online">
+        <div class="online-dot"></div>
+        <div class="stats-online-text"><span id="stats-online-count">12,847</span> players online right now</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+'use strict';
+
+/* ============================================================
+   PAGE LOADER
+============================================================ */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const loader = document.getElementById('page-loader');
+    loader.classList.add('done');
+    setTimeout(() => loader.style.display = 'none', 800);
+  }, 2000);
+});
+
+/* ============================================================
+   CURSOR
+============================================================ */
+const dot = document.getElementById('cursor-dot');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animCursor() {
+  rx += (mx - rx) * 0.15; ry += (my - ry) * 0.15;
+  dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animCursor);
+})();
+function attachHoverCursor() {
+  document.querySelectorAll('a,button,input,[role="button"],.checkbox-custom,.remember-custom,.payment-card').forEach(el => {
+    el.removeEventListener('mouseenter', onHoverIn);
+    el.removeEventListener('mouseleave', onHoverOut);
+    el.addEventListener('mouseenter', onHoverIn);
+    el.addEventListener('mouseleave', onHoverOut);
+  });
+}
+function onHoverIn() { ring.classList.add('hover-btn'); }
+function onHoverOut() { ring.classList.remove('hover-btn'); }
+attachHoverCursor();
+
+/* ============================================================
+   TOAST SYSTEM
+============================================================ */
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <div class="toast-content">
+      <span class="toast-icon">${icons[type]}</span>
+      <span class="toast-msg">${message}</span>
+    </div>
+    <div class="toast-progress"></div>
+  `;
+  toast.onclick = () => { toast.classList.add('hide'); setTimeout(() => toast.remove(), 400); };
+  container.appendChild(toast);
+  requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+  setTimeout(() => { toast.classList.remove('show'); toast.classList.add('hide'); setTimeout(() => toast.remove(), 400); }, 3500);
+  while (container.children.length > 3) container.removeChild(container.firstChild);
+}
+
+/* ============================================================
+   STARFIELD CANVAS
+============================================================ */
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+
+  const STARS = 200;
+  const stars = Array.from({length: STARS}, () => ({
+    x: Math.random(), y: Math.random(),
+    r: 0.4 + Math.random() * 2,
+    phase: Math.random() * Math.PI * 2,
+    speed: 0.3 + Math.random() * 1.2
+  }));
+
+  const nebulas = [
+    { x: 0.15, y: 0.2, r: [0,212,255], rx: 0.2, ry: 0.25, vx: 0.00003, vy: 0.00002 },
+    { x: 0.8, y: 0.7, r: [139,0,255], rx: 0.25, ry: 0.18, vx: -0.00002, vy: 0.00003 }
+  ];
+
+  let t = 0;
+  function draw() {
+    t++;
+    ctx.clearRect(0, 0, W, H);
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#05050A'); bg.addColorStop(1, '#08080F');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    nebulas.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > 1) n.vx *= -1;
+      if (n.y < 0 || n.y > 1) n.vy *= -1;
+      const grd = ctx.createRadialGradient(n.x*W, n.y*H, 0, n.x*W, n.y*H, n.rx*W);
+      grd.addColorStop(0, `rgba(${n.r.join(',')},0.07)`);
+      grd.addColorStop(1, 'transparent');
+      ctx.save(); ctx.scale(1, n.ry / n.rx);
+      ctx.fillStyle = grd; ctx.beginPath();
+      ctx.arc(n.x*W, (n.y*H)*(n.rx/n.ry), n.rx*W, 0, Math.PI*2);
+      ctx.fill(); ctx.restore();
+    });
+
+    stars.forEach(s => {
+      const tw = t * 0.02;
+      const alpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(tw * s.speed + s.phase));
+      ctx.beginPath(); ctx.arc(s.x*W, s.y*H, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ============================================================
+   TAB SWITCHER
+============================================================ */
+function switchTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+  document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+}
+
+/* ============================================================
+   PASSWORD SHOW/HIDE
+============================================================ */
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  const icon = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.replace('fa-eye', 'fa-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.replace('fa-eye-slash', 'fa-eye');
+  }
+}
+
+/* ============================================================
+   PASSWORD STRENGTH
+============================================================ */
+function checkStrength() {
+  const pw = document.getElementById('reg-password').value;
+  const wrap = document.getElementById('pw-strength-wrap');
+  const label = document.getElementById('pw-label');
+  const segs = [document.getElementById('seg1'), document.getElementById('seg2'),
+                document.getElementById('seg3'), document.getElementById('seg4')];
+
+  if (!pw.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score = Math.min(score + 1, 4);
+
+  const levels = ['', 'weak', 'fair', 'strong', 'excellent'];
+  const labels = { 1: 'Weak', 2: 'Fair', 3: 'Strong', 4: 'Excellent' };
+  const colors = { 1: 'var(--red-crash)', 2: '#FF8800', 3: 'var(--blue-glow)', 4: 'var(--green-win)' };
+
+  const lvl = Math.max(1, Math.min(score, 4));
+  segs.forEach((s, i) => {
+    s.className = 'pw-seg';
+    if (i < lvl) s.classList.add(levels[lvl]);
+  });
+  label.textContent = labels[lvl];
+  label.style.color = colors[lvl];
+}
+
+/* ============================================================
+   TOGGLES
+============================================================ */
+let termsChecked = false;
+function toggleTerms() {
+  termsChecked = !termsChecked;
+  const custom = document.getElementById('terms-custom');
+  custom.classList.toggle('checked', termsChecked);
+}
+
+let rememberChecked = false;
+function toggleRemember() {
+  rememberChecked = !rememberChecked;
+  const custom = document.getElementById('remember-custom');
+  custom.classList.toggle('checked', rememberChecked);
+}
+
+/* ============================================================
+   REAL-TIME VALIDATION
+============================================================ */
+function setField(id, state, errMsg = '') {
+  const fg = document.getElementById('fg-' + id);
+  const fv = document.getElementById('fv-' + id);
+  if (!fg || !fv) return;
+  fg.classList.remove('has-error', 'has-success');
+  fv.className = 'field-valid';
+  if (state === 'ok') {
+    fg.classList.add('has-success');
+    fv.classList.add('show', 'ok'); fv.textContent = '✓';
+  } else if (state === 'err') {
+    fg.classList.add('has-error');
+    fv.classList.add('show', 'err'); fv.textContent = '✗';
+    const errEl = document.getElementById('err-' + id);
+    if (errEl && errMsg) errEl.textContent = errMsg;
+  }
+}
+
+function validateFullname() {
+  const v = document.getElementById('reg-fullname').value.trim();
+  setField('fullname', v.length >= 2 ? 'ok' : (v.length > 0 ? 'err' : ''));
+}
+function validateUsername() {
+  const v = document.getElementById('reg-username').value.trim();
+  if (!v) { setField('username', ''); return; }
+  const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+  const taken = Object.values(users).some(u => u.username.toLowerCase() === v.toLowerCase());
+  if (taken) { setField('username', 'err', 'Username already taken.'); return; }
+  const valid = /^[a-zA-Z0-9_]{4,20}$/.test(v);
+  setField('username', valid ? 'ok' : 'err', '4–20 chars, letters/numbers/underscores only.');
+}
+function validateEmail() {
+  const v = document.getElementById('reg-email').value.trim();
+  if (!v) { setField('email', ''); return; }
+  setField('email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'ok' : 'err');
+}
+function validatePassword() {
+  const v = document.getElementById('reg-password').value;
+  setField('password', v.length >= 8 ? 'ok' : (v.length > 0 ? 'err' : ''));
+  validateConfirm(); // re-validate confirm when password changes
+}
+function validateConfirm() {
+  const pw = document.getElementById('reg-password').value;
+  const cf = document.getElementById('reg-confirm').value;
+  if (!cf) { setField('confirm', ''); return; }
+  setField('confirm', cf === pw ? 'ok' : 'err');
+}
+
+/* ============================================================
+   LOCALSTORAGE HELPERS
+============================================================ */
+function generateReferralCode() {
+  return 'AT' + Math.random().toString(36).substr(2, 6).toUpperCase();
+}
+function hashPass(pw) { return btoa(unescape(encodeURIComponent(pw))); }
+
+/* ============================================================
+   REGISTER HANDLER
+============================================================ */
+function handleRegister() {
+  const fullname = document.getElementById('reg-fullname').value.trim();
+  const username = document.getElementById('reg-username').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
+  const referral = document.getElementById('reg-referral').value.trim();
+  const btn = document.getElementById('register-btn');
+
+  // Validate all fields
+  let valid = true;
+  if (fullname.length < 2) { setField('fullname', 'err'); valid = false; }
+  if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) { setField('username', 'err'); valid = false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setField('email', 'err'); valid = false; }
+  if (password.length < 8) { setField('password', 'err'); valid = false; }
+  if (confirm !== password) { setField('confirm', 'err'); valid = false; }
+  if (!termsChecked) {
+    showToast('Please accept the Terms of Service.', 'warning'); valid = false;
+  }
+
+  if (!valid) {
+    btn.classList.add('shake');
+    setTimeout(() => btn.classList.remove('shake'), 600);
+    return;
+  }
+
+  // Check if email already exists
+  const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+  const emailTaken = Object.values(users).some(u => u.email.toLowerCase() === email.toLowerCase());
+  if (emailTaken) {
+    setField('email', 'err');
+    showToast('Email already registered. Try logging in.', 'error');
+    btn.classList.add('shake');
+    setTimeout(() => btn.classList.remove('shake'), 600);
+    return;
+  }
+
+  // Show loading state
+  btn.classList.add('loading');
+  btn.innerHTML = '<div class="dots-loader"><span></span><span></span><span></span></div>';
+
+  setTimeout(() => {
+    const userId = Date.now().toString();
+    const newUser = {
+      id: userId,
+      fullname,
+      username,
+      email,
+      passwordHash: hashPass(password),
+      balance: 10000,
+      demoBalance: 50000,
+      tickets: 5,
+      totalWins: 0,
+      totalWagered: 0,
+      biggestWin: 0,
+      joinedAt: new Date().toISOString(),
+      avatar: null,
+      notifications: [{
+        id: 1,
+        type: 'welcome',
+        message: `Welcome to AviaTarr, ${username}! Your 5 free tournament tickets have been credited.`,
+        read: false,
+        time: new Date().toISOString()
+      }],
+      depositHistory: [],
+      withdrawHistory: [],
+      gameHistory: [],
+      referralCode: generateReferralCode(),
+      referredBy: referral || null
+    };
+
+    users[userId] = newUser;
+    localStorage.setItem('aviatarr_users', JSON.stringify(users));
+    localStorage.setItem('aviatarr_session', userId);
+
+    // Confetti + success
+    launchConfetti();
+    showSuccessOverlay(username);
+  }, 1800);
+}
+
+/* ============================================================
+   LOGIN HANDLER
+============================================================ */
+function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+
+  if (!email || !password) {
+    showToast('Please enter your email and password.', 'warning');
+    btn.classList.add('shake');
+    setTimeout(() => btn.classList.remove('shake'), 600);
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.innerHTML = '<div class="dots-loader"><span></span><span></span><span></span></div>';
+
+  setTimeout(() => {
+    const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+    const user = Object.values(users).find(
+      u => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === hashPass(password)
+    );
+
+    if (!user) {
+      btn.classList.remove('loading');
+      btn.innerHTML = 'ENTER THE ARENA ✈️';
+      btn.classList.add('shake');
+      setTimeout(() => btn.classList.remove('shake'), 600);
+      showToast('Invalid email or password.', 'error');
+      document.getElementById('panel-login').querySelectorAll('input').forEach(inp => {
+        inp.closest('.field-group')?.classList.add('has-error');
+      });
+      setTimeout(() => {
+        document.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+      }, 2000);
+      return;
+    }
+
+    localStorage.setItem('aviatarr_session', user.id);
+    if (rememberChecked) localStorage.setItem('aviatarr_remember', user.id);
+
+    showSuccessOverlay(user.username, true);
+    launchConfetti();
+  }, 1500);
+}
+
+/* ============================================================
+   SUCCESS OVERLAY + CONFETTI
+============================================================ */
+function showSuccessOverlay(username, isLogin = false) {
+  const overlay = document.getElementById('success-overlay');
+  const title = document.getElementById('success-title');
+  const sub = document.getElementById('success-sub');
+  title.textContent = isLogin ? 'WELCOME BACK!' : 'WELCOME ABOARD!';
+  sub.textContent = isLogin ? `Good to see you, ${username}!` : `Account created! 5 free tickets added, ${username}.`;
+  overlay.classList.add('show');
+  setTimeout(() => { window.location.href = 'index.html'; }, 2200);
+}
+
+function launchConfetti() {
+  const canvas = document.getElementById('success-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+  const colors = ['#FFD700','#00D4FF','#8B00FF','#00FF88','#FF2244','#FF8800'];
+  const particles = Array.from({length: 80}, (_, i) => ({
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    vx: (Math.random() - 0.5) * 16,
+    vy: (Math.random() - 0.5) * 16 - 6,
+    size: 4 + Math.random() * 8,
+    color: colors[i % colors.length],
+    rotation: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.2,
+    alpha: 1, decay: 0.012 + Math.random() * 0.01,
+    w: 6 + Math.random() * 10, h: 3 + Math.random() * 5
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+    particles.forEach(p => {
+      if (p.alpha <= 0) return; alive = true;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.25;
+      p.rotation += p.rotSpeed; p.alpha -= p.decay;
+      ctx.save(); ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.translate(p.x, p.y); ctx.rotate(p.rotation);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+    });
+    if (alive) requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+/* ============================================================
+   STATS PANEL — LIVE UPDATES
+============================================================ */
+(function() {
+  const recentWins = [
+    { user: 'RocketKing_PK', mult: '21.5x', amount: 'PKR 89,000' },
+    { user: 'ZeeshanElite', mult: '14.2x', amount: 'PKR 55,000' },
+    { user: 'NightOwl_Pak', mult: '8.7x',  amount: 'PKR 34,500' },
+    { user: 'SkullKing99',  mult: '31.0x', amount: 'PKR 78,000' },
+    { user: 'MaverickBet',  mult: '6.4x',  amount: 'PKR 22,400' },
+    { user: 'AliPlayz786',  mult: '12.4x', amount: 'PKR 36,000' },
+    { user: 'CryptoFalcon', mult: '5.1x',  amount: 'PKR 18,700' },
+    { user: 'JetSetter_PK', mult: '47.0x', amount: 'PKR 145,200' },
+  ];
+
+  const winsEl = document.getElementById('wins-list');
+  let wIdx = 0;
+  function showNextWin() {
+    if (!winsEl) return;
+    const w = recentWins[wIdx % recentWins.length]; wIdx++;
+    const item = document.createElement('div');
+    item.className = 'win-item';
+    item.innerHTML = `
+      <span class="win-item-user">${w.user}</span>
+      <span class="win-item-mult">${w.mult}</span>
+      <span class="win-item-amount">${w.amount}</span>
+    `;
+    // Keep max 5 items
+    while (winsEl.children.length >= 5) winsEl.removeChild(winsEl.firstChild);
+    winsEl.appendChild(item);
+  }
+  showNextWin(); showNextWin(); showNextWin();
+  setInterval(showNextWin, 2800);
+
+  // Online counter fluctuation
+  let online = 12847;
+  const onlineEl1 = document.getElementById('stat-online');
+  const onlineEl2 = document.getElementById('stats-online-count');
+  setInterval(() => {
+    online += Math.floor((Math.random() - 0.5) * 10);
+    online = Math.max(11000, Math.min(15000, online));
+    const fmt = online.toLocaleString();
+    if (onlineEl1) onlineEl1.textContent = fmt;
+    if (onlineEl2) onlineEl2.textContent = fmt;
+  }, 4000);
+
+  // Paid out counter
+  let paid = 2450000;
+  const paidEl = document.getElementById('stat-paidout');
+  setInterval(() => {
+    paid += Math.floor(Math.random() * 5000) + 1000;
+    if (paidEl) paidEl.textContent = 'PKR ' + paid.toLocaleString();
+  }, 6000);
+})();
+
+/* ============================================================
+   CHECK EXISTING SESSION
+============================================================ */
+(function() {
+  const session = localStorage.getItem('aviatarr_session');
+  if (session) {
+    const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+    if (users[session]) {
+      // Already logged in — show welcome message and redirect option
+      setTimeout(() => {
+        showToast(`Welcome back, ${users[session].username}! 👋`, 'success');
+      }, 2500);
+    }
+  }
+  // Pre-fill remember me
+  const remembered = localStorage.getItem('aviatarr_remember');
+  if (remembered) {
+    const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+    if (users[remembered]) {
+      document.getElementById('login-email').value = users[remembered].email;
+      rememberChecked = true;
+      document.getElementById('remember-custom').classList.add('checked');
+    }
+  }
+})();
+
+/* ============================================================
+   URL PARAM: ?tab=register
+============================================================ */
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tab') === 'register') switchTab('register');
+})();
+
+/* ============================================================
+   WELCOME TOAST
+============================================================ */
+setTimeout(() => {
+  const session = localStorage.getItem('aviatarr_session');
+  if (!session) showToast('🎁 New players get 5 free tournament tickets!', 'info');
+}, 2800);
+</script>
+</body>
+</html>

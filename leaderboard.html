@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AviaTarr — Live Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#FFD700;--gold2:#FFA500;--gold-g:rgba(255,215,0,.22);
+  --cyan:#00E5FF;--green:#00FF88;--red:#FF4444;--purple:#9D4EDD;
+  --silver:#C0C0C0;--bronze:#CD7F32;
+  --bg:#020214;--card:rgba(5,8,28,.93);--card2:rgba(8,12,36,.97);
+  --bdr:rgba(255,215,0,.12);--t1:#fff;--t2:rgba(255,255,255,.58);--t3:rgba(255,255,255,.28);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden;}
+#bgc{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.65;}
+#confetti{position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;pointer-events:none;}
+.z{position:relative;z-index:1;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;padding:0 28px;
+    background:rgba(2,2,20,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr);}
+.logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.25rem;color:var(--gold);text-decoration:none;letter-spacing:2px;display:flex;align-items:center;gap:8px;}
+.logo-plane{font-size:1.4rem;animation:ppulse 3s ease-in-out infinite;}
+@keyframes ppulse{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.nav-links{display:flex;align-items:center;gap:2px;margin-left:28px;flex:1;}
+.nav-a{font-family:'Exo 2',sans-serif;font-weight:600;font-size:.76rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);text-decoration:none;padding:6px 14px;border-radius:7px;transition:all .2s;}
+.nav-a:hover,.nav-a.on{color:var(--gold);background:rgba(255,215,0,.08);}
+.nav-r{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.nav-user{display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,215,0,.05);border:1px solid var(--bdr);border-radius:10px;}
+.live-dot{display:flex;align-items:center;gap:7px;font-family:'Orbitron',sans-serif;font-size:.68rem;font-weight:700;color:var(--green);}
+.live-dot::before{content:'●';animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ── HERO HEADER ── */
+.lb-hero{margin-top:66px;padding:28px 0 0;background:radial-gradient(ellipse at 50% 0%,rgba(0,20,60,.5) 0%,transparent 70%);}
+.lb-hero-in{max-width:1060px;margin:0 auto;padding:0 28px 0;}
+.lb-sel{display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-wrap:wrap;}
+.sel-lbl{font-family:'Orbitron',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:3px;color:var(--t3);text-transform:uppercase;}
+.trn-sel{font-family:'Exo 2',sans-serif;font-weight:600;font-size:.84rem;background:rgba(5,8,28,.9);border:1px solid var(--bdr);border-radius:8px;padding:8px 14px;color:#fff;cursor:pointer;outline:none;min-width:220px;}
+.trn-sel option{background:#050520;}
+.trn-sel:focus{border-color:rgba(255,215,0,.35);}
+
+/* ── MY STATS BAR ── */
+.my-stats{background:rgba(4,6,24,.92);border:1px solid var(--bdr);border-radius:14px;
+          padding:16px 22px;margin-bottom:24px;display:flex;align-items:center;gap:0;flex-wrap:wrap;}
+.ms-item{flex:1;min-width:100px;padding:0 18px;border-right:1px solid var(--bdr);}
+.ms-item:first-child{padding-left:0;}
+.ms-item:last-child{border-right:none;}
+.ms-v{font-family:'Orbitron',sans-serif;font-weight:700;font-size:1.15rem;}
+.ms-l{font-size:.67rem;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.rank-me{color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.5);}
+.ms-share{margin-left:auto;padding-left:18px;border-right:none;}
+.share-btn{font-family:'Orbitron',sans-serif;font-weight:700;font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;padding:9px 16px;border-radius:9px;border:1px solid rgba(255,215,0,.3);background:rgba(255,215,0,.07);color:var(--gold);cursor:pointer;transition:all .2s;}
+.share-btn:hover{background:rgba(255,215,0,.15);transform:translateY(-1px);}
+
+/* ── PODIUM ── */
+.podium-wrap{margin-bottom:32px;}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:0;max-width:680px;margin:0 auto;}
+.pod-slot{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;position:relative;}
+
+/* Silver — left */
+.pod-slot:nth-child(1) .pod-plat{
+  height:80px;background:linear-gradient(180deg,rgba(192,192,192,.18) 0%,rgba(192,192,192,.06) 100%);
+  border:1px solid rgba(192,192,192,.28);border-bottom:none;border-radius:12px 12px 0 0;}
+.pod-slot:nth-child(1) .pod-rank{color:var(--silver);}
+.pod-slot:nth-child(1) .pod-crown{filter:drop-shadow(0 0 10px rgba(192,192,192,.6));}
+
+/* Gold — center */
+.pod-slot:nth-child(2) .pod-plat{
+  height:120px;background:linear-gradient(180deg,rgba(255,215,0,.2) 0%,rgba(255,165,0,.07) 100%);
+  border:1px solid rgba(255,215,0,.35);border-bottom:none;border-radius:12px 12px 0 0;
+  box-shadow:0 -10px 40px rgba(255,215,0,.12);}
+.pod-slot:nth-child(2) .pod-rank{color:var(--gold);font-size:1.3rem;text-shadow:0 0 20px rgba(255,215,0,.7);}
+.pod-slot:nth-child(2) .pod-crown{filter:drop-shadow(0 0 14px rgba(255,215,0,.8));animation:crownanim 2s ease-in-out infinite;}
+@keyframes crownanim{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* Bronze — right */
+.pod-slot:nth-child(3) .pod-plat{
+  height:60px;background:linear-gradient(180deg,rgba(205,127,50,.16) 0%,rgba(205,127,50,.05) 100%);
+  border:1px solid rgba(205,127,50,.26);border-bottom:none;border-radius:12px 12px 0 0;}
+.pod-slot:nth-child(3) .pod-rank{color:var(--bronze);}
+.pod-slot:nth-child(3) .pod-crown{filter:drop-shadow(0 0 9px rgba(205,127,50,.55));}
+
+.pod-info{display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:10px;}
+.pod-crown{font-size:1.5rem;margin-bottom:4px;}
+.pod-av{font-size:2rem;}
+.pod-name{font-family:'Orbitron',sans-serif;font-size:.68rem;font-weight:700;text-align:center;line-height:1.2;}
+.pod-pts{font-size:.72rem;color:var(--t2);}
+.pod-prize{font-size:.65rem;color:var(--gold);}
+.pod-rank{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.05rem;margin-bottom:2px;}
+.pod-plat{width:100%;transition:height .4s ease;}
+
+/* ── LEADERBOARD TABLE ── */
+.main{max-width:1060px;margin:0 auto;padding:0 28px 80px;}
+.lb-head{display:grid;grid-template-columns:56px 1fr 130px 140px 130px 110px;gap:0;padding:10px 16px;
+          font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:2px;
+          color:var(--t3);text-transform:uppercase;border-bottom:1px solid var(--bdr);}
+#lbBody{position:relative;}
+.lb-row{display:grid;grid-template-columns:56px 1fr 130px 140px 130px 110px;gap:0;
+        padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);
+        align-items:center;transition:background .3s;will-change:transform;}
+.lb-row:hover{background:rgba(255,255,255,.03);}
+.lb-row.me{background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.14);border-radius:10px;margin:4px 0;position:relative;}
+.lb-row.me::after{content:'YOU';position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  font-family:'Orbitron',sans-serif;font-size:.54rem;font-weight:700;letter-spacing:2px;
+  color:var(--cyan);background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.2);
+  padding:2px 8px;border-radius:20px;}
+.lb-row.moved-up{background:rgba(0,255,136,.04);}
+.lb-row.moved-dn{background:rgba(255,68,68,.04);}
+
+/* rank cell */
+.cell-rank{display:flex;align-items:center;gap:6px;}
+.rank-num{font-family:'Orbitron',sans-serif;font-weight:900;font-size:.9rem;min-width:22px;}
+.rk1{color:var(--gold);text-shadow:0 0 16px rgba(255,215,0,.55);}
+.rk2{color:var(--silver);}
+.rk3{color:var(--bronze);}
+.rank-chg{font-size:.6rem;font-weight:700;min-width:16px;}
+.rc-up{color:var(--green);}
+.rc-dn{color:var(--red);}
+.rc-eq{color:var(--t3);}
+
+/* player cell */
+.cell-player{display:flex;align-items:center;gap:10px;min-width:0;}
+.p-av{font-size:1.2rem;}
+.p-name{font-weight:600;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* pts cell */
+.cell-pts{font-family:'Orbitron',sans-serif;font-weight:700;font-size:.88rem;color:var(--gold);}
+.cell-pts.me-pts{text-shadow:0 0 12px rgba(255,215,0,.45);}
+
+/* multiplier */
+.cell-mult{font-size:.84rem;color:var(--t2);}
+.mult-fire{color:var(--red) !important;font-weight:700;}
+
+/* rounds */
+.cell-rounds{font-size:.82rem;color:var(--t3);}
+
+/* prize */
+.cell-prize{font-size:.78rem;color:var(--green);font-weight:600;}
+
+/* ── TOP-3 GLOW ROWS ── */
+.lb-row[data-rank="1"]{background:rgba(255,215,0,.04);border-left:2px solid rgba(255,215,0,.35);}
+.lb-row[data-rank="2"]{background:rgba(192,192,192,.03);border-left:2px solid rgba(192,192,192,.25);}
+.lb-row[data-rank="3"]{background:rgba(205,127,50,.04);border-left:2px solid rgba(205,127,50,.25);}
+
+/* ── ELIMINATED ── */
+.elim-banner{text-align:center;padding:20px;color:var(--red);font-family:'Orbitron',sans-serif;
+             font-size:.75rem;font-weight:700;letter-spacing:2px;
+             border:1px solid rgba(255,68,68,.2);border-radius:10px;margin:20px 0;
+             background:rgba(255,68,68,.05);}
+
+/* ── EMPTY ── */
+.lb-empty{text-align:center;padding:54px 20px;color:var(--t3);}
+
+/* ── REFRESH INDICATOR ── */
+.refresh-bar{position:fixed;top:66px;left:0;right:0;height:2px;z-index:300;overflow:hidden;}
+.refresh-prog{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));width:0;transition:width linear;}
+
+/* ── HUD PREVIEW (for game.html integration reference) ── */
+.hud-note{background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.1);border-radius:12px;
+          padding:14px 18px;margin-bottom:20px;font-size:.78rem;color:var(--t2);line-height:1.6;}
+.hud-note strong{color:var(--gold);}
+
+/* ── TOAST ── */
+#toasts{position:fixed;bottom:26px;right:26px;z-index:10000;display:flex;flex-direction:column;gap:9px;}
+.toast{font-family:'Exo 2',sans-serif;font-size:.82rem;padding:11px 18px;border-radius:11px;border:1px solid;backdrop-filter:blur(14px);animation:tIn .3s ease,tOut .3s ease 3.7s forwards;max-width:300px;}
+.t-ok{background:rgba(0,255,136,.09);border-color:rgba(0,255,136,.28);color:var(--green);}
+.t-er{background:rgba(255,68,68,.09);border-color:rgba(255,68,68,.28);color:var(--red);}
+.t-if{background:rgba(0,229,255,.09);border-color:rgba(0,229,255,.28);color:var(--cyan);}
+@keyframes tIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes tOut{to{opacity:0;transform:translateX(18px)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:760px){
+  .lb-head,.lb-row{grid-template-columns:48px 1fr 90px 80px;}
+  .cell-rounds,.cell-mult{display:none;}
+  .nav-links{display:none;}
+  .main{padding:0 14px 60px;}
+  .lb-hero-in{padding:0 14px;}
+  .my-stats{gap:8px;}
+  .ms-item{min-width:80px;padding:0 10px;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgc"></canvas>
+<canvas id="confetti"></canvas>
+
+<!-- NAV -->
+<nav class="z">
+  <a href="tournament.html" class="logo"><span class="logo-plane">✈</span> AVIATARR</a>
+  <div class="nav-links">
+    <a href="tournament.html" class="nav-a">🏆 Arena</a>
+    <a href="leaderboard.html" class="nav-a on">📊 Leaderboard</a>
+    <a href="#" class="nav-a">📜 History</a>
+  </div>
+  <div class="nav-r">
+    <div class="live-dot">LIVE</div>
+    <div class="nav-user" id="navUser">
+      <span style="font-size:1.1rem">🎯</span>
+      <span style="font-weight:600;font-size:.84rem">YoungPilot</span>
+      <span style="font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;color:var(--gold)">🎫 750</span>
+    </div>
+  </div>
+</nav>
+
+<!-- REFRESH BAR -->
+<div class="refresh-bar"><div class="refresh-prog" id="refProg"></div></div>
+
+<!-- HERO HEADER -->
+<div class="lb-hero z">
+  <div class="lb-hero-in">
+    <div class="lb-sel">
+      <span class="sel-lbl">Tournament</span>
+      <select class="trn-sel" id="trnSel" onchange="switchTrn(this.value)"></select>
+      <div class="live-dot" id="liveBdg" style="display:none">LIVE</div>
+    </div>
+
+    <!-- My Stats Bar -->
+    <div class="my-stats" id="myStats">
+      <div class="ms-item"><div class="ms-v rank-me" id="myRank">—</div><div class="ms-l">My Rank</div></div>
+      <div class="ms-item"><div class="ms-v" id="myPts" style="color:var(--gold)">—</div><div class="ms-l">My Points</div></div>
+      <div class="ms-item"><div class="ms-v" id="myMult">—</div><div class="ms-l">Best Multi</div></div>
+      <div class="ms-item"><div class="ms-v" id="myRounds">—</div><div class="ms-l">Rounds</div></div>
+      <div class="ms-item"><div class="ms-v" id="myPrize" style="color:var(--green)">—</div><div class="ms-l">Prize</div></div>
+      <div class="ms-item"><div class="ms-v" id="timeLeft">—</div><div class="ms-l">Time Left</div></div>
+      <div class="ms-item ms-share">
+        <button class="share-btn" onclick="shareCard()">📤 Share Rank</button>
+      </div>
+    </div>
+
+    <!-- Podium -->
+    <div class="podium-wrap">
+      <div class="podium" id="podium">
+        <!-- rendered by JS -->
+      </div>
+      <div style="height:3px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.18),transparent);border-radius:2px;max-width:680px;margin:0 auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD TABLE -->
+<main class="main z">
+  <div class="lb-head">
+    <div>Rank</div>
+    <div>Player</div>
+    <div>Points</div>
+    <div>Best Multi</div>
+    <div>Rounds</div>
+    <div>Prize</div>
+  </div>
+  <div id="lbBody"></div>
+</main>
+
+<div id="toasts"></div>
+
+<script src="shared.js"></script>
+<script>
+// Bridge: sync aviatarr_session user into TournamentEngine's aviatarr_current_user key
+(function(){
+  try{
+    if(typeof localStorage === 'undefined') return;
+    const sid = localStorage.getItem('aviatarr_session');
+    if(!sid) return;
+    const users = JSON.parse(localStorage.getItem('aviatarr_users')||'{}');
+    const u = users[sid];
+    if(!u) return;
+    const existing = JSON.parse(localStorage.getItem('aviatarr_current_user')||'null');
+    if(!existing || existing.id === 'PLR_CURRENT'){
+      localStorage.setItem('aviatarr_current_user', JSON.stringify({
+        id:'PLR_CURRENT', userId: sid,
+        username: u.username || 'Player',
+        avatar: (u.username||'P')[0].toUpperCase(),
+        balance: u.balance || 0,
+        tickets: u.tickets || 0,
+        totalWins: u.totalWins || 0,
+        joinedTournaments: u.joinedTournaments || [],
+      }));
+    }
+  }catch(e){}
+})();
+</script>
+<script src="tournament-engine.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════
+   AviaTarr Live Leaderboard  —  Phase 4
+   Features: FLIP animation, confetti, podium, share card
+   ══════════════════════════════════════════════════════ */
+
+let _tid = null;       // current tournament ID
+let _prev = {};        // previous ranks  { playerId: rank }
+let _prevTop = [];     // previous leaderboard for comparison
+let _refreshInt = null;
+let _tlInt = null;
+let _simCanv = null;
+let _lastMyRank = null;
+
+/* ══ BACKGROUND CANVAS ══ */
+(()=>{
+  const cv=document.getElementById('bgc'),cx=cv.getContext('2d');
+  const resize=()=>{cv.width=innerWidth;cv.height=innerHeight;};
+  resize();addEventListener('resize',resize);
+  const pts=Array.from({length:65},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,
+    vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.5+.5}));
+  (function draw(){
+    cx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach((p,i)=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>cv.width)p.vx*=-1;if(p.y<0||p.y>cv.height)p.vy*=-1;
+      cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle='rgba(0,229,255,.28)';cx.fill();
+      pts.slice(i+1).forEach(q=>{const d=Math.hypot(p.x-q.x,p.y-q.y);
+        if(d<110){cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(q.x,q.y);
+          cx.strokeStyle=`rgba(0,229,255,${(1-d/110)*.065})`;cx.lineWidth=.5;cx.stroke();}});
+    });requestAnimationFrame(draw);
+  })();
+})();
+
+/* ══ CONFETTI SYSTEM ══ */
+const Confetti=(()=>{
+  const cv=document.getElementById('confetti');
+  const cx=cv.getContext('2d');
+  let pieces=[],running=false;
+  const resize=()=>{cv.width=innerWidth;cv.height=innerHeight;};
+  resize();addEventListener('resize',resize);
+  const COLORS=['#FFD700','#00E5FF','#00FF88','#FF69B4','#FFFFFF','#FFA500','#9D4EDD'];
+  function burst(ox,oy,n=90){
+    for(let i=0;i<n;i++){
+      const ang=Math.random()*Math.PI*2,spd=Math.random()*9+3;
+      pieces.push({x:ox??cv.width/2,y:oy??cv.height*0.35,
+        vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-6,
+        rot:Math.random()*360,rs:(Math.random()-.5)*14,
+        w:Math.random()*11+5,h:Math.random()*5+3,
+        color:COLORS[Math.floor(Math.random()*COLORS.length)],
+        life:1,decay:.011+Math.random()*.007});
+    }
+    if(!running){running=true;animate();}
+  }
+  function animate(){
+    cx.clearRect(0,0,cv.width,cv.height);
+    pieces=pieces.filter(p=>p.life>0&&p.y<cv.height+60);
+    if(!pieces.length){running=false;return;}
+    pieces.forEach(p=>{
+      p.x+=p.vx;p.vy+=.22;p.y+=p.vy;p.rot+=p.rs;p.life-=p.decay;
+      cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot*Math.PI/180);
+      cx.globalAlpha=Math.max(0,p.life);cx.fillStyle=p.color;
+      cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cx.restore();
+    });
+    requestAnimationFrame(animate);
+  }
+  return{burst};
+})();
+
+/* ══ WEB AUDIO SOUNDS ══ */
+function playRankUp(){
+  try{
+    const ac=new AudioContext();
+    [[440,.05],[554,.1],[660,.15],[880,.22]].forEach(([freq,delay])=>{
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.connect(g);g.connect(ac.destination);
+      o.frequency.value=freq;o.type='sine';
+      g.gain.setValueAtTime(.08,ac.currentTime+delay);
+      g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+delay+.25);
+      o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+.28);
+    });
+  }catch(e){}
+}
+function playJoin(){
+  try{
+    const ac=new AudioContext(),o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.frequency.setValueAtTime(523,ac.currentTime);
+    o.frequency.exponentialRampToValueAtTime(784,ac.currentTime+.12);
+    g.gain.setValueAtTime(.07,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.25);
+    o.start();o.stop(ac.currentTime+.28);
+  }catch(e){}
+}
+
+/* ══ INIT ══ */
+function init(){
+  rUser();
+  populateSelector();
+  // Read URL param
+  const params=new URLSearchParams(location.search);
+  const urlT=params.get('t');
+  const ts=TE.getTournaments().filter(t=>['active','open','completed'].includes(t.status));
+  _tid=urlT&&ts.find(t=>t.id===urlT)?urlT:(ts[0]?.id||null);
+  if(_tid){document.getElementById('trnSel').value=_tid;}
+  if(_tid){renderAll();}
+  startRefresh();
+  startTimeLeft();
+}
+
+function populateSelector(){
+  const sel=document.getElementById('trnSel');
+  const ts=TE.getTournaments().filter(t=>t.status!=='draft');
+  sel.innerHTML=ts.map(t=>`<option value="${t.id}">${t.name} [${t.status.toUpperCase()}]</option>`).join('');
+}
+
+function switchTrn(id){
+  _tid=id;_prev={};_prevTop=[];_lastMyRank=null;renderAll();
+}
+
+/* ══ RENDER ALL ══ */
+function renderAll(){
+  if(!_tid)return;
+  renderSelector();
+  renderMyStats();
+  renderPodium();
+  renderTableFlip();
+}
+
+function renderSelector(){
+  const t=TE.getTournament(_tid);if(!t)return;
+  const live=document.getElementById('liveBdg');
+  live.style.display=t.status==='active'?'flex':'none';
+}
+
+/* ══ MY STATS ══ */
+function renderMyStats(){
+  const t=TE.getTournament(_tid);if(!t)return;
+  const lb=TE.getLeaderboard(_tid);
+  const me=lb.find(e=>e.playerId==='PLR_CURRENT');
+  document.getElementById('myRank').textContent=me?'#'+me.rank:'—';
+  document.getElementById('myPts').textContent=me?Math.round(me.points).toLocaleString():'0';
+  document.getElementById('myMult').textContent=me?me.biggestMultiplier.toFixed(2)+'×':'—';
+  document.getElementById('myRounds').textContent=me?me.roundsPlayed:'0';
+  document.getElementById('myPrize').textContent=me&&me.prizeWon?me.prizeWon.toLocaleString()+'🎫':'—';
+  document.getElementById('timeLeft').textContent=t.status==='active'?TE.timeLeft(t.endTime):t.status==='completed'?'Ended':TE.timeLeft(t.startTime)+' start';
+}
+
+/* ══ PODIUM ══ */
+function renderPodium(){
+  const lb=TE.getLeaderboard(_tid);
+  const top=[lb[1],lb[0],lb[2]]; // silver, gold, bronze order
+  const CROWNS=['🥈','🥇','🥉'];
+  const prizes=[];
+  const t=TE.getTournament(_tid);
+  if(t&&t.status==='completed'&&t.prizeDistribution){
+    const pm=TE.calcPrizes(t);
+    [0,1,2].forEach(i=>{if(lb[i])prizes[i]=pm[lb[i].playerId]||0;});
+  }
+  // reorder prizes for display order [silver, gold, bronze]
+  const pdPrizes=[prizes[1],prizes[0],prizes[2]];
+  document.getElementById('podium').innerHTML=top.map((p,i)=>`
+    <div class="pod-slot">
+      <div class="pod-info">
+        <div class="pod-crown">${CROWNS[i]}</div>
+        <div class="pod-av">${p?p.avatar:'—'}</div>
+        <div class="pod-name">${p?p.username:'—'}</div>
+        <div class="pod-pts">${p?Math.round(p.points).toLocaleString():''}</div>
+        ${pdPrizes[i]?`<div class="pod-prize">🎫 ${pdPrizes[i].toLocaleString()}</div>`:''}
+      </div>
+      <div class="pod-rank">${p?'#'+p.rank:''}</div>
+      <div class="pod-plat"></div>
+    </div>`).join('');
+}
+
+/* ══ LEADERBOARD TABLE — FLIP ANIMATION ══ */
+function renderTableFlip(){
+  const lb=TE.getLeaderboard(_tid);
+  const container=document.getElementById('lbBody');
+  const user=TE.getUser();
+
+  if(!lb.length){
+    container.innerHTML='<div class="lb-empty" style="color:var(--t3);font-size:.82rem;padding:40px;text-align:center">No players in this tournament yet.</div>';
+    return;
+  }
+
+  // ── FIRST: snapshot old positions ──
+  const oldPos={};
+  container.querySelectorAll('.lb-row[data-id]').forEach(row=>{
+    oldPos[row.dataset.id]=row.getBoundingClientRect().top;
+  });
+
+  // ── Check my rank before update ──
+  const meEntry=lb.find(e=>e.playerId==='PLR_CURRENT');
+  const currentMyRank=meEntry?.rank||null;
+
+  // ── LAST: rebuild DOM ──
+  container.innerHTML=lb.map((e,i)=>{
+    const isMe=e.playerId==='PLR_CURRENT';
+    const prev=_prev[e.playerId];
+    const chg=prev?prev-e.rank:0; // positive = moved up
+    let rankCls='rk-other';
+    if(e.rank===1)rankCls='rk1';else if(e.rank===2)rankCls='rk2';else if(e.rank===3)rankCls='rk3';
+    const chgEl=chg>0?`<span class="rank-chg rc-up">▲${chg}</span>`:
+                chg<0?`<span class="rank-chg rc-dn">▼${Math.abs(chg)}</span>`:
+                `<span class="rank-chg rc-eq">–</span>`;
+    const fireOn=e.biggestMultiplier>=5;
+    const prizeEst=_tid&&TE.getTournament(_tid)?.status==='completed'?e.prizeWon||0:0;
+    return `<div class="lb-row${isMe?' me':''}" data-id="${e.playerId}" data-rank="${e.rank}">
+      <div class="cell-rank">
+        <span class="rank-num ${rankCls}">${e.rank<=3?['🥇','🥈','🥉'][e.rank-1]:e.rank}</span>
+        ${!prev?'':chgEl}
+      </div>
+      <div class="cell-player">
+        <span class="p-av">${e.avatar}</span>
+        <span class="p-name">${e.username}</span>
+      </div>
+      <div class="cell-pts${isMe?' me-pts':''}">${Math.round(e.points).toLocaleString()}</div>
+      <div class="cell-mult${fireOn?' mult-fire':''}">${e.biggestMultiplier.toFixed(2)}×${fireOn?' 🔥':''}</div>
+      <div class="cell-rounds">${e.roundsPlayed}</div>
+      <div class="cell-prize">${prizeEst?'🎫 '+prizeEst.toLocaleString():'—'}</div>
+    </div>`;
+  }).join('');
+
+  // ── INVERT + PLAY: FLIP animation ──
+  requestAnimationFrame(()=>{
+    container.querySelectorAll('.lb-row[data-id]').forEach(row=>{
+      const id=row.dataset.id;
+      const oldT=oldPos[id];
+      if(oldT===undefined){
+        // new row → fade in
+        row.style.opacity='0';row.style.transform='translateX(-12px)';
+        requestAnimationFrame(()=>{
+          row.style.transition='opacity .35s ease,transform .35s ease';
+          row.style.opacity='1';row.style.transform='';
+        });
+        return;
+      }
+      const newT=row.getBoundingClientRect().top;
+      const dy=oldT-newT;
+      if(Math.abs(dy)>0.5){
+        row.style.transform=`translateY(${dy}px)`;
+        row.style.transition='none';
+        requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+            row.style.transition='transform .42s cubic-bezier(.25,.46,.45,.94)';
+            row.style.transform='';
+          });
+        });
+      }
+    });
+  });
+
+  // ── Confetti + sound on rank-up ──
+  if(_lastMyRank!==null&&currentMyRank!==null&&currentMyRank<_lastMyRank){
+    Confetti.burst();
+    playRankUp();
+    toast(`🚀 Rank up! You're now #${currentMyRank}!`,'ok');
+    // highlight row briefly
+    setTimeout(()=>{
+      const myRow=container.querySelector('.lb-row.me');
+      if(myRow){myRow.classList.add('moved-up');setTimeout(()=>myRow.classList.remove('moved-up'),1500);}
+    },50);
+  }
+
+  // ── Update previous rank map ──
+  lb.forEach(e=>{_prev[e.playerId]=e.rank;});
+  _lastMyRank=currentMyRank;
+}
+
+/* ══ REFRESH TICKER ══ */
+function startRefresh(){
+  if(_refreshInt)clearInterval(_refreshInt);
+  animateRefreshBar(3000);
+  _refreshInt=setInterval(()=>{
+    renderAll();
+    animateRefreshBar(3000);
+    TE.on('sim:tick',()=>{/* engine handles simulation */});
+  },3000);
+}
+
+function animateRefreshBar(dur){
+  const bar=document.getElementById('refProg');
+  bar.style.transition='none';bar.style.width='0';
+  requestAnimationFrame(()=>{
+    bar.style.transition=`width ${dur}ms linear`;bar.style.width='100%';
+  });
+}
+
+function startTimeLeft(){
+  if(_tlInt)clearInterval(_tlInt);
+  _tlInt=setInterval(()=>{
+    if(!_tid)return;
+    const t=TE.getTournament(_tid);
+    if(!t)return;
+    document.getElementById('timeLeft').textContent=
+      t.status==='active'?TE.timeLeft(t.endTime):t.status==='completed'?'Ended':TE.timeLeft(t.startTime)+' start';
+  },1000);
+}
+
+/* ══ RENDER USER NAV ══ */
+function rUser(){
+  const u=TE.getUser();
+  document.getElementById('navUser').innerHTML=
+    `<span style="font-size:1.1rem">${u.avatar}</span>
+     <span style="font-weight:600;font-size:.84rem">${u.username}</span>
+     <span style="font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;color:var(--gold)">🎫 ${u.tickets.toLocaleString()}</span>`;
+}
+
+/* ══ SHARE CARD (Canvas) ══ */
+function shareCard(){
+  if(!_tid){toast('No tournament selected','er');return;}
+  const t=TE.getTournament(_tid);
+  const lb=TE.getLeaderboard(_tid);
+  const me=lb.find(e=>e.playerId==='PLR_CURRENT');
+  const user=TE.getUser();
+
+  const W=820,H=420;
+  const cv=document.createElement('canvas');
+  cv.width=W;cv.height=H;
+  const cx=cv.getContext('2d');
+
+  // Background
+  cx.fillStyle='#020214';cx.fillRect(0,0,W,H);
+  // Gradient overlay
+  const g1=cx.createRadialGradient(W*.25,H*.5,0,W*.25,H*.5,350);
+  g1.addColorStop(0,'rgba(0,25,70,.6)');g1.addColorStop(1,'transparent');
+  cx.fillStyle=g1;cx.fillRect(0,0,W,H);
+  const g2=cx.createRadialGradient(W*.75,H*.5,0,W*.75,H*.5,280);
+  g2.addColorStop(0,'rgba(40,0,80,.45)');g2.addColorStop(1,'transparent');
+  cx.fillStyle=g2;cx.fillRect(0,0,W,H);
+
+  // Gold border
+  const gb=cx.createLinearGradient(0,0,W,H);
+  gb.addColorStop(0,'#FFD700');gb.addColorStop(.5,'#FFA500');gb.addColorStop(1,'#FFD700');
+  cx.strokeStyle=gb;cx.lineWidth=2;cx.strokeRect(12,12,W-24,H-24);
+
+  // Header
+  cx.font='bold 18px Orbitron, monospace';cx.fillStyle='#FFD700';cx.textAlign='center';
+  cx.fillText('✈ AVIATARR TOURNAMENT RESULT ✈',W/2,55);
+  cx.font='500 14px Exo 2, sans-serif';cx.fillStyle='rgba(255,255,255,.55)';
+  cx.fillText(t?.name||'Tournament',W/2,82);
+
+  // Divider
+  cx.beginPath();cx.moveTo(60,100);cx.lineTo(W-60,100);
+  cx.strokeStyle='rgba(255,215,0,.2)';cx.lineWidth=1;cx.stroke();
+
+  // Left: Rank display
+  cx.textAlign='center';
+  const rankColors={1:'#FFD700',2:'#C0C0C0',3:'#CD7F32'};
+  cx.font='bold 88px Orbitron, monospace';
+  cx.fillStyle=rankColors[me?.rank]||'#ffffff';
+  cx.shadowColor=cx.fillStyle;cx.shadowBlur=me?.rank<=3?30:0;
+  cx.fillText(me?'#'+me.rank:'?',200,240);
+  cx.shadowBlur=0;
+  cx.font='700 15px Orbitron, monospace';cx.fillStyle='rgba(255,255,255,.5)';
+  cx.fillText('FINAL RANK',200,272);
+
+  // Center: Avatar + name
+  cx.font='52px sans-serif';cx.fillStyle='#fff';cx.textAlign='center';
+  cx.fillText(user.avatar,410,200);
+  cx.font='bold 22px Orbitron, monospace';cx.fillStyle='#00E5FF';
+  cx.shadowColor='rgba(0,229,255,.4)';cx.shadowBlur=12;
+  cx.fillText(user.username,410,240);cx.shadowBlur=0;
+
+  // Stats grid
+  const stats=[
+    ['Points',me?Math.round(me.points).toLocaleString():'0'],
+    ['Best Multi',me?me.biggestMultiplier.toFixed(2)+'×':'—'],
+    ['Rounds',me?me.roundsPlayed:'0'],
+    ['Prize',me&&me.prizeWon?me.prizeWon.toLocaleString()+'🎫':'—'],
+  ];
+  cx.textAlign='left';
+  stats.forEach(([l,v],i)=>{
+    const x=620,y=148+i*52;
+    cx.font='500 11px Exo 2, sans-serif';cx.fillStyle='rgba(255,255,255,.4)';cx.fillText(l.toUpperCase(),x,y);
+    cx.font='bold 16px Orbitron, monospace';cx.fillStyle='#fff';cx.fillText(v,x,y+18);
+  });
+
+  // Footer
+  cx.textAlign='center';
+  cx.font='11px Exo 2, sans-serif';cx.fillStyle='rgba(255,255,255,.25)';
+  cx.fillText(`aviatarr.game  •  ${new Date().toLocaleDateString()}`,W/2,H-22);
+
+  // Download
+  const link=document.createElement('a');
+  link.download=`aviatarr-rank-${Date.now()}.png`;
+  link.href=cv.toDataURL('image/png');
+  link.click();
+  toast('📤 Share card downloaded!','ok');
+}
+
+/* ══ DEMO: Add Points to Self ══ */
+function demoPlayRound(){
+  if(!_tid)return;
+  const t=TE.getTournament(_tid);
+  if(!t||t.status!=='active'){toast('Join an active tournament first','er');return;}
+  if(!(TE.getUser().joinedTournaments||[]).includes(_tid)){
+    TE.joinTournament(_tid);
+    playJoin();
+    toast('✈️ Joined tournament!','ok');
+  }
+  const bet=Math.floor(Math.random()*200)+50;
+  const mult=parseFloat((Math.random()*8+1.5).toFixed(2));
+  const res=TE.recordRound(_tid,bet,mult);
+  if(res){
+    toast(`⚡ Bet ${bet}🎫 × ${mult}× = +${Math.round(res.pts)} pts! Rank #${res.rank}`,'if');
+    renderAll();
+  }
+}
+
+/* ══ TOAST ══ */
+function toast(msg,type='if'){
+  const el=document.createElement('div');
+  el.className=`toast t-${type}`;el.textContent=msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(),4200);
+}
+
+/* ══ LIVE UPDATES ══ */
+TE.on('sim:tick',()=>{
+  if(_tid)renderAll();
+});
+TE.on('lb:updated',({tid})=>{
+  if(tid===_tid)renderAll();
+});
+
+/* ══ KEYBOARD SHORTCUT: D = demo play round ══ */
+document.addEventListener('keydown',e=>{
+  if(e.key==='d'||e.key==='D')demoPlayRound();
+  if(e.key==='c'||e.key==='C')Confetti.burst();
+});
+
+/* ══ FLOATING DEMO BUTTON ══ */
+const demobtn=document.createElement('button');
+demobtn.innerHTML='▶ Demo Play Round <small style="opacity:.6">(or press D)</small>';
+demobtn.style.cssText='position:fixed;bottom:26px;left:26px;z-index:500;font-family:Orbitron,sans-serif;font-size:.68rem;font-weight:700;letter-spacing:1px;padding:11px 18px;border-radius:10px;border:1px solid rgba(0,229,255,.3);background:rgba(0,229,255,.09);color:#00E5FF;cursor:pointer;transition:all .2s;';
+demobtn.onmouseover=()=>demobtn.style.background='rgba(0,229,255,.18)';
+demobtn.onmouseout=()=>demobtn.style.background='rgba(0,229,255,.09)';
+demobtn.onclick=demoPlayRound;
+document.body.appendChild(demobtn);
+
+/* ══ BOOT ══ */
+init();
+</script>
+</body>
+</html>
