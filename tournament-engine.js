@@ -1,16 +1,16 @@
 /* ════════════════════════════════════════════════════════════════════
-   AviaTarr Tournament Engine  v2.0  |  Phase 4
+   ArenaPlay Tournament Engine  v2.0  |  Phase 4
    Core tournament system: data, logic, admin, events, simulation
    ════════════════════════════════════════════════════════════════════ */
 
 class TournamentEngine {
   constructor() {
     this.K = {
-      TOURNAMENTS : 'aviatarr_tournaments',
-      PLAYERS     : 'aviatarr_players',
-      USER        : 'aviatarr_current_user',
-      HISTORY     : 'aviatarr_tournament_history',
-      PAYMENTS    : 'aviatarr_payment_requests',
+      TOURNAMENTS : 'arenaplay_tournaments',
+      PLAYERS     : 'arenaplay_players',
+      USER        : 'arenaplay_current_user',
+      HISTORY     : 'arenaplay_tournament_history',
+      PAYMENTS    : 'arenaplay_payment_requests',
     };
     this._ev = {};
     this.init();
