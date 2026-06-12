@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AviaTarr — Login & Register</title>
+<title>ArenaPlay — Login & Register</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -953,7 +953,7 @@ function validateFullname() {
 function validateUsername() {
   const v = document.getElementById('reg-username').value.trim();
   if (!v) { setField('username', ''); return; }
-  const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+  const users = JSON.parse(localStorage.getItem('arenaplay_users') || '{}');
   const taken = Object.values(users).some(u => u.username.toLowerCase() === v.toLowerCase());
   if (taken) { setField('username', 'err', 'Username already taken.'); return; }
   const valid = /^[a-zA-Z0-9_]{4,20}$/.test(v);
@@ -1014,7 +1014,7 @@ function handleRegister() {
   }
 
   // Check if email already exists
-  const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+  const users = JSON.parse(localStorage.getItem('arenaplay_users') || '{}');
   const emailTaken = Object.values(users).some(u => u.email.toLowerCase() === email.toLowerCase());
   if (emailTaken) {
     setField('email', 'err');
@@ -1047,7 +1047,7 @@ function handleRegister() {
       notifications: [{
         id: 1,
         type: 'welcome',
-        message: `Welcome to AviaTarr, ${username}! Your 5 free tournament tickets have been credited.`,
+        message: `Welcome to ArenaPlay, ${username}! Your 5 free tournament tickets have been credited.`,
         read: false,
         time: new Date().toISOString()
       }],
@@ -1059,8 +1059,8 @@ function handleRegister() {
     };
 
     users[userId] = newUser;
-    localStorage.setItem('aviatarr_users', JSON.stringify(users));
-    localStorage.setItem('aviatarr_session', userId);
+    localStorage.setItem('arenaplay_users', JSON.stringify(users));
+    localStorage.setItem('arenaplay_session', userId);
 
     // Confetti + success
     launchConfetti();
@@ -1087,7 +1087,7 @@ function handleLogin() {
   btn.innerHTML = '<div class="dots-loader"><span></span><span></span><span></span></div>';
 
   setTimeout(() => {
-    const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+    const users = JSON.parse(localStorage.getItem('arenaplay_users') || '{}');
     const user = Object.values(users).find(
       u => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === hashPass(password)
     );
@@ -1107,8 +1107,8 @@ function handleLogin() {
       return;
     }
 
-    localStorage.setItem('aviatarr_session', user.id);
-    if (rememberChecked) localStorage.setItem('aviatarr_remember', user.id);
+    localStorage.setItem('arenaplay_session', user.id);
+    if (rememberChecked) localStorage.setItem('arenaplay_remember', user.id);
 
     showSuccessOverlay(user.username, true);
     launchConfetti();
@@ -1224,9 +1224,9 @@ function launchConfetti() {
    CHECK EXISTING SESSION
 ============================================================ */
 (function() {
-  const session = localStorage.getItem('aviatarr_session');
+  const session = localStorage.getItem('arenaplay_session');
   if (session) {
-    const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+    const users = JSON.parse(localStorage.getItem('arenaplay_users') || '{}');
     if (users[session]) {
       // Already logged in — show welcome message and redirect option
       setTimeout(() => {
@@ -1235,9 +1235,9 @@ function launchConfetti() {
     }
   }
   // Pre-fill remember me
-  const remembered = localStorage.getItem('aviatarr_remember');
+  const remembered = localStorage.getItem('arenaplay_remember');
   if (remembered) {
-    const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+    const users = JSON.parse(localStorage.getItem('arenaplay_users') || '{}');
     if (users[remembered]) {
       document.getElementById('login-email').value = users[remembered].email;
       rememberChecked = true;
@@ -1258,7 +1258,7 @@ function launchConfetti() {
    WELCOME TOAST
 ============================================================ */
 setTimeout(() => {
-  const session = localStorage.getItem('aviatarr_session');
+  const session = localStorage.getItem('arenaplay_session');
   if (!session) showToast('🎁 New players get 5 free tournament tickets!', 'info');
 }, 2800);
 </script>
