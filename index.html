@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="AviaTarr — Pakistan's #1 Aviator Tournament Arena. Bet, cash out, and compete for PKR 50,000 monthly prize pools.">
-<meta property="og:title" content="AviaTarr — Ride The Multiplier">
+<meta name="description" content="ArenaPlay — Pakistan's #1 Aviator Tournament Arena. Bet, cash out, and compete for PKR 50,000 monthly prize pools.">
+<meta property="og:title" content="ArenaPlay — Ride The Multiplier">
 <meta property="og:description" content="Join live Aviator tournaments. Bet. Cash out. Climb the leaderboard.">
-<title>AviaTarr — Tournament Arena</title>
+<title>ArenaPlay — Tournament Arena</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1210,7 +1210,7 @@ footer {
 ============================================================ -->
 <section id="how-it-works">
   <div class="section-inner">
-    <h2 class="section-heading" data-animate>HOW AVIATARR WORKS</h2>
+    <h2 class="section-heading" data-animate>HOW ARENAPLAY WORKS</h2>
     <span class="section-heading-line"></span>
     <p class="section-tagline" data-animate>Three steps. Pure adrenaline.</p>
 
@@ -1357,7 +1357,7 @@ footer {
 ============================================================ -->
 <section id="features">
   <div class="section-inner">
-    <h2 class="section-heading" data-animate>WHY PLAYERS CHOOSE AVIATARR</h2>
+    <h2 class="section-heading" data-animate>WHY PLAYERS CHOOSE ARENAPLAY</h2>
     <span class="section-heading-line"></span>
 
     <div class="features-grid" style="margin-top:48px">
@@ -1460,7 +1460,7 @@ footer {
   <canvas id="cta-canvas"></canvas>
   <div class="cta-inner" data-animate>
     <h2 class="cta-h2">READY TO FLY?</h2>
-    <p class="cta-sub">Join 12,000+ players already competing in AviaTarr tournaments</p>
+    <p class="cta-sub">Join 12,000+ players already competing in ArenaPlay tournaments</p>
     <a href="auth.html" class="btn-primary pulse">🚀 CREATE FREE ACCOUNT</a>
     <p class="cta-fine">No credit card required. Start with a free practice balance.</p>
   </div>
@@ -1514,7 +1514,7 @@ footer {
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 AviaTarr. All rights reserved.</span>
+    <span>© 2025 ArenaPlay. All rights reserved.</span>
     <span class="middle">18+ | Play Responsibly</span>
     <span>Provably Fair ✓</span>
   </div>
@@ -1531,7 +1531,7 @@ footer {
 ============================================================ */
 window.addEventListener('load', () => {
   // If logged in, point hero CTA to game directly
-  const session = localStorage.getItem('aviatarr_session');
+  const session = localStorage.getItem('arenaplay_session');
   if (session) {
     document.querySelectorAll('a[href="auth.html"]').forEach(a => {
       if (a.textContent.includes('PLAY') || a.textContent.includes('CREATE')) {
@@ -1593,7 +1593,7 @@ function toggleMobileMenu() {
    NAV — LOGIN STATE
 ============================================================ */
 function handleJoin() {
-  const session = localStorage.getItem('aviatarr_session');
+  const session = localStorage.getItem('arenaplay_session');
   if (!session) {
     window.location.href = 'auth.html?redirect=game';
   } else {
@@ -1604,8 +1604,8 @@ function handleJoin() {
 
 function updateNav() {
   const navRight = document.getElementById('nav-right');
-  const session = localStorage.getItem('aviatarr_session');
-  const users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+  const session = localStorage.getItem('arenaplay_session');
+  const users = JSON.parse(localStorage.getItem('arenaplay_users') || '{}');
   const user = session ? users[session] : null;
 
   if (user) {
@@ -2157,7 +2157,7 @@ function animateCounter(el, target, duration = 1500, prefix = '', suffix = '') {
 (function() {
   const testimonials = [
     { name: 'ZeeshanK', init: 'Z', color: '#FF6B00', stars: 5,
-      quote: 'I cashed out at 47x last night. AviaTarr is absolutely insane. The tournaments make it even more exciting than regular play.',
+      quote: 'I cashed out at 47x last night. ArenaPlay is absolutely insane. The tournaments make it even more exciting than regular play.',
       win: 'Won PKR 89,000' },
     { name: 'NightOwl_Pak', init: 'N', color: '#8B00FF', stars: 5,
       quote: 'Best aviator platform in Pakistan, no question. Clean UI, fast payments, and the leaderboard keeps me coming back every day.',
