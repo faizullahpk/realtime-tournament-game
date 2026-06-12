@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AviaTarr — Live Leaderboard</title>
+<title>ArenaPlay — Live Leaderboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -194,7 +194,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 
 <!-- NAV -->
 <nav class="z">
-  <a href="tournament.html" class="logo"><span class="logo-plane">✈</span> AVIATARR</a>
+  <a href="tournament.html" class="logo"><span class="logo-plane">✈</span> ARENAPLAY</a>
   <div class="nav-links">
     <a href="tournament.html" class="nav-a">🏆 Arena</a>
     <a href="leaderboard.html" class="nav-a on">📊 Leaderboard</a>
@@ -262,18 +262,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 
 <script src="shared.js"></script>
 <script>
-// Bridge: sync aviatarr_session user into TournamentEngine's aviatarr_current_user key
+// Bridge: sync arenaplay_session user into TournamentEngine's arenaplay_current_user key
 (function(){
   try{
     if(typeof localStorage === 'undefined') return;
-    const sid = localStorage.getItem('aviatarr_session');
+    const sid = localStorage.getItem('arenaplay_session');
     if(!sid) return;
-    const users = JSON.parse(localStorage.getItem('aviatarr_users')||'{}');
+    const users = JSON.parse(localStorage.getItem('arenaplay_users')||'{}');
     const u = users[sid];
     if(!u) return;
-    const existing = JSON.parse(localStorage.getItem('aviatarr_current_user')||'null');
+    const existing = JSON.parse(localStorage.getItem('arenaplay_current_user')||'null');
     if(!existing || existing.id === 'PLR_CURRENT'){
-      localStorage.setItem('aviatarr_current_user', JSON.stringify({
+      localStorage.setItem('arenaplay_current_user', JSON.stringify({
         id:'PLR_CURRENT', userId: sid,
         username: u.username || 'Player',
         avatar: (u.username||'P')[0].toUpperCase(),
@@ -289,7 +289,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;ali
 <script src="tournament-engine.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════
-   AviaTarr Live Leaderboard  —  Phase 4
+   ArenaPlay Live Leaderboard  —  Phase 4
    Features: FLIP animation, confetti, podium, share card
    ══════════════════════════════════════════════════════ */
 
@@ -626,7 +626,7 @@ function shareCard(){
 
   // Header
   cx.font='bold 18px Orbitron, monospace';cx.fillStyle='#FFD700';cx.textAlign='center';
-  cx.fillText('✈ AVIATARR TOURNAMENT RESULT ✈',W/2,55);
+  cx.fillText('✈ ARENAPLAY TOURNAMENT RESULT ✈',W/2,55);
   cx.font='500 14px Exo 2, sans-serif';cx.fillStyle='rgba(255,255,255,.55)';
   cx.fillText(t?.name||'Tournament',W/2,82);
 
@@ -669,11 +669,11 @@ function shareCard(){
   // Footer
   cx.textAlign='center';
   cx.font='11px Exo 2, sans-serif';cx.fillStyle='rgba(255,255,255,.25)';
-  cx.fillText(`aviatarr.game  •  ${new Date().toLocaleDateString()}`,W/2,H-22);
+  cx.fillText(`arenaplay.game  •  ${new Date().toLocaleDateString()}`,W/2,H-22);
 
   // Download
   const link=document.createElement('a');
-  link.download=`aviatarr-rank-${Date.now()}.png`;
+  link.download=`arenaplay-rank-${Date.now()}.png`;
   link.href=cv.toDataURL('image/png');
   link.click();
   toast('📤 Share card downloaded!','ok');
