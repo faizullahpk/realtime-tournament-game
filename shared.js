@@ -1,21 +1,21 @@
 /**
- * AviaTarr Shared Data Layer
+ * ArenaPlay Shared Data Layer
  * Single source of truth for all localStorage operations across all pages.
  * Include this in every HTML page: <script src="shared.js"></script>
  */
 
 const KEYS = {
-  USERS:         'aviatarr_users',
-  SESSION:       'aviatarr_session',
-  REMEMBER:      'aviatarr_remember',
-  DEPOSITS:      'aviatarr_deposits',
-  WITHDRAWALS:   'aviatarr_withdraws',
-  TOURNAMENTS:   'aviatarr_tournaments',
-  SETTINGS:      'aviatarr_settings',
-  ANNOUNCEMENTS: 'aviatarr_announcements',
-  ADMIN_SESSION: 'aviatarr_admin_session',
-  AUDIT_LOG:     'aviatarr_admin_audit',
-  GAME_HISTORY:  'aviatarr_game_history',
+  USERS:         'arenaplay_users',
+  SESSION:       'arenaplay_session',
+  REMEMBER:      'arenaplay_remember',
+  DEPOSITS:      'arenaplay_deposits',
+  WITHDRAWALS:   'arenaplay_withdraws',
+  TOURNAMENTS:   'arenaplay_tournaments',
+  SETTINGS:      'arenaplay_settings',
+  ANNOUNCEMENTS: 'arenaplay_announcements',
+  ADMIN_SESSION: 'arenaplay_admin_session',
+  AUDIT_LOG:     'arenaplay_admin_audit',
+  GAME_HISTORY:  'arenaplay_game_history',
 };
 
 const DB = {
@@ -286,7 +286,7 @@ const DB = {
       maintenanceMode: false,
       easypaisa: true, jazzcash: true, bank: true, usdt: true,
       botMin: 8, botMax: 15,
-      announcementTicker: '🔥 AviaTarr — Pakistan\'s #1 Aviator Tournament Game!'
+      announcementTicker: '🔥 ArenaPlay — Pakistan\'s #1 Aviator Tournament Game!'
     });
   },
   saveSettings(s) { this._set(KEYS.SETTINGS, s); },
