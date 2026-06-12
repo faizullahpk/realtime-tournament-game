@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AviaTarr — Admin Panel</title>
+<title>ArenaPlay — Admin Panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -531,7 +531,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--blue-glow);background
 
       <div class="card">
         <div class="card-head"><div class="card-title"><i class="fas fa-bullhorn"></i> Game-page Ticker Text</div></div>
-        <textarea id="tickerText" rows="3" placeholder="Welcome to AviaTarr! Win big in tonight's tournament..."></textarea>
+        <textarea id="tickerText" rows="3" placeholder="Welcome to ArenaPlay! Win big in tonight's tournament..."></textarea>
         <div style="margin-top:12px"><button class="btn-pri" id="saveSettingsBtn"><i class="fas fa-save"></i> Save All Settings</button></div>
       </div>
     </div>
@@ -573,18 +573,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--blue-glow);background
 /* =====================================================
    ADMIN SHARED STATE
    ===================================================== */
-const ADMIN_PASSWORD = "aviatarr_admin_2025";
-const SESSION_KEY = 'aviatarr_admin_session';
+const ADMIN_PASSWORD = "arenaplay_admin_2025";
+const SESSION_KEY = 'arenaplay_admin_session';
 const SESSION_TIMEOUT = 2*60*60*1000; // 2h
-const AUDIT_KEY = 'aviatarr_admin_audit';
+const AUDIT_KEY = 'arenaplay_admin_audit';
 
 const STORE = {
-  USERS:'aviatarr_users',
-  DEPOSITS:'aviatarr_deposits',
-  WITHDRAWS:'aviatarr_withdraws',
-  TOURNYS:'aviatarr_tournaments',
-  SETTINGS:'aviatarr_settings',
-  ANNOUNCE:'aviatarr_announcements',
+  USERS:'arenaplay_users',
+  DEPOSITS:'arenaplay_deposits',
+  WITHDRAWS:'arenaplay_withdraws',
+  TOURNYS:'arenaplay_tournaments',
+  SETTINGS:'arenaplay_settings',
+  ANNOUNCE:'arenaplay_announcements',
 };
 
 const DB = {
@@ -790,7 +790,7 @@ function seedDemo(){
     users=demoNames.map((n,i)=>({
       id:Date.now()+i,
       name:n.replace('_',' '),username:n,
-      email:n.toLowerCase()+'@aviatarr.demo',
+      email:n.toLowerCase()+'@arenaplay.demo',
       passwordHash:btoa('demo123'),
       balance:Math.floor(Math.random()*60000)+5000,
       demoBalance:50000,tickets:Math.floor(Math.random()*20),
@@ -1004,7 +1004,7 @@ function renderActivity(){
   const acts=[];
   deps.forEach(d=>acts.push({type:'dep',ts:d.submittedAt,text:`<strong>${d.username}</strong> deposited PKR ${d.amount.toLocaleString()} via ${d.method}`}));
   wds.forEach(w=>acts.push({type:'wd',ts:w.requestedAt,text:`<strong>${w.username}</strong> requested withdrawal of PKR ${w.amount.toLocaleString()}`}));
-  users.slice(-5).forEach(u=>acts.push({type:'reg',ts:u.joinedAt,text:`<strong>${u.username}</strong> joined AviaTarr`}));
+  users.slice(-5).forEach(u=>acts.push({type:'reg',ts:u.joinedAt,text:`<strong>${u.username}</strong> joined ArenaPlay`}));
   acts.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
   const list=document.getElementById('actList');
   if (acts.length===0){list.innerHTML='<div class="empty"><i class="fas fa-inbox"></i>No activity yet</div>';return}
