@@ -4,7 +4,7 @@
 
 <div align="center">
 
-# ✈️ AviaTarr — Live Tournament Arena
+# ✈️ ArenaPlay — Live Tournament Arena
 
 **A real-time, multiplayer "crash"-style tournament game with live betting, cash-out mechanics, leaderboards, and a complete tournament management engine.**
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-**AviaTarr** is a browser-based, real-time tournament arena built around an Aviator-style multiplier game. Players join live tournaments, place bets, and cash out before the round ends to climb a competitive leaderboard for prize pools. Behind it sits a complete, custom-built **Tournament Engine** that manages tournament data, player state, round logic, simulation, and an admin control system.
+**ArenaPlay** is a browser-based, real-time tournament arena built around an Aviator-style multiplier game. Players join live tournaments, place bets, and cash out before the round ends to climb a competitive leaderboard for prize pools. Behind it sits a complete, custom-built **Tournament Engine** that manages tournament data, player state, round logic, simulation, and an admin control system.
 
 > Built by **[DG Technology](https://dgtechnology.com)** — engineered by Faiz Ullah.
 
@@ -53,7 +53,7 @@
 ## Architecture
 
 ```
-aviatarr/
+arenaplay/
 ├── index.html              # Landing / arena entry
 ├── auth.html               # Player authentication
 ├── dashboard.html          # Player dashboard
