@@ -1,3 +1,7 @@
+> ⚠️ **Educational / Proof of Concept** — This project is an open-source
+> portfolio demonstration. It is **not** for production or commercial use.
+> The author accepts **no liability** for any misuse. See [DISCLAIMER.md](DISCLAIMER.md).
+
 <div align="center">
 
 # ✈️ AviaTarr — Live Tournament Arena
