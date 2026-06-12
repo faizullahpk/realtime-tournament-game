@@ -1,6 +1,6 @@
 /**
  * ╔══════════════════════════════════════════════════════════╗
- * ║          AviaTarr — Phase 2: Core Game Engine            ║
+ * ║          ArenaPlay — Phase 2: Core Game Engine            ║
  * ║  Provably Fair · Canvas-Animated · Dual Bet · Web Audio  ║
  * ╚══════════════════════════════════════════════════════════╝
  */
@@ -753,10 +753,10 @@ function saveHistory() {
     if (typeof DB !== 'undefined' && DB.currentUser()) {
       DB.updateBalance(gameState.balance);
     } else {
-      localStorage.setItem('aviatarr_balance', String(gameState.balance));
+      localStorage.setItem('arenaplay_balance', String(gameState.balance));
     }
-    localStorage.setItem('aviatarr_history', JSON.stringify(gameState.roundHistory.slice(-50)));
-    localStorage.setItem('aviatarr_stats',   JSON.stringify(gameState.sessionStats));
+    localStorage.setItem('arenaplay_history', JSON.stringify(gameState.roundHistory.slice(-50)));
+    localStorage.setItem('arenaplay_stats',   JSON.stringify(gameState.sessionStats));
   } catch(e) {}
 }
 
@@ -767,11 +767,11 @@ function loadHistory() {
       const userBal = DB.getBalance();
       if (userBal >= 0) updateBalance(userBal);
     } else {
-      const b = localStorage.getItem('aviatarr_balance');
+      const b = localStorage.getItem('arenaplay_balance');
       if (b) { const bal = parseFloat(b); if (!isNaN(bal) && bal > 0) updateBalance(bal); }
     }
-    const h = localStorage.getItem('aviatarr_history');
-    const s = localStorage.getItem('aviatarr_stats');
+    const h = localStorage.getItem('arenaplay_history');
+    const s = localStorage.getItem('arenaplay_stats');
     if (h) gameState.roundHistory = JSON.parse(h);
     if (s) gameState.sessionStats = JSON.parse(s);
   } catch(e) {}
@@ -1102,13 +1102,13 @@ function doCrash() {
   gameState.sessionStats.rounds++;
 
   // Sync balance back to user account in localStorage
-  const _session = localStorage.getItem('aviatarr_session');
+  const _session = localStorage.getItem('arenaplay_session');
   if (_session) {
     try {
-      const _users = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+      const _users = JSON.parse(localStorage.getItem('arenaplay_users') || '{}');
       if (_users[_session]) {
         _users[_session].balance = gameState.balance;
-        localStorage.setItem('aviatarr_users', JSON.stringify(_users));
+        localStorage.setItem('arenaplay_users', JSON.stringify(_users));
       }
     } catch(e) {}
   }
@@ -1367,8 +1367,8 @@ function init() {
   // ── Session integration ──
   // Load balance from logged-in user account, fall back to localStorage game balance
   try {
-    const _session = localStorage.getItem('aviatarr_session');
-    const _users   = JSON.parse(localStorage.getItem('aviatarr_users') || '{}');
+    const _session = localStorage.getItem('arenaplay_session');
+    const _users   = JSON.parse(localStorage.getItem('arenaplay_users') || '{}');
     if (_session && _users[_session]) {
       const _user = _users[_session];
       // Set nav avatar
@@ -1378,7 +1378,7 @@ function init() {
       const _bal = _user.balance;
       if (_bal !== undefined && !isNaN(_bal)) {
         gameState.balance = _bal;
-        localStorage.setItem('aviatarr_balance', String(_bal));
+        localStorage.setItem('arenaplay_balance', String(_bal));
       }
       // Show admin link if admin
       if (_user.isAdmin) {
@@ -1412,7 +1412,7 @@ function init() {
   startLobby();
 
   console.log(
-    '%c AviaTarr Phase 2 Engine Loaded ',
+    '%c ArenaPlay Phase 2 Engine Loaded ',
     'background:#00f5ff;color:#040814;font-weight:bold;font-size:14px;padding:4px 8px;border-radius:4px;'
   );
 }
