@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AviaTarr — Tournament Arena</title>
+<title>ArenaPlay — Tournament Arena</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -407,7 +407,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;
 
 <!-- NAV -->
 <nav class="z">
-  <a href="tournament.html" class="logo"><span class="logo-plane">✈</span> AVIATARR</a>
+  <a href="tournament.html" class="logo"><span class="logo-plane">✈</span> ARENAPLAY</a>
   <div class="nav-links">
     <a href="tournament.html" class="nav-a on">🏆 Arena</a>
     <a href="leaderboard.html" class="nav-a">📊 Leaderboard</a>
@@ -570,18 +570,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;
 
 <script src="shared.js"></script>
 <script>
-// Bridge: sync aviatarr_session user into TournamentEngine's aviatarr_current_user key
+// Bridge: sync arenaplay_session user into TournamentEngine's arenaplay_current_user key
 (function(){
   try{
     if(typeof localStorage === 'undefined') return;
-    const sid = localStorage.getItem('aviatarr_session');
+    const sid = localStorage.getItem('arenaplay_session');
     if(!sid) return;
-    const users = JSON.parse(localStorage.getItem('aviatarr_users')||'{}');
+    const users = JSON.parse(localStorage.getItem('arenaplay_users')||'{}');
     const u = users[sid];
     if(!u) return;
-    const existing = JSON.parse(localStorage.getItem('aviatarr_current_user')||'null');
+    const existing = JSON.parse(localStorage.getItem('arenaplay_current_user')||'null');
     if(!existing || existing.id === 'PLR_CURRENT'){
-      localStorage.setItem('aviatarr_current_user', JSON.stringify({
+      localStorage.setItem('arenaplay_current_user', JSON.stringify({
         id:'PLR_CURRENT', userId: sid,
         username: u.username || 'Player',
         avatar: (u.username||'P')[0].toUpperCase(),
@@ -597,7 +597,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;
 <script src="tournament-engine.js"></script>
 <script>
 /* ══════════════════════════════════════════════════════
-   AviaTarr Tournament Lobby  —  Phase 4 UI
+   ArenaPlay Tournament Lobby  —  Phase 4 UI
    ══════════════════════════════════════════════════════ */
 let _tab='active',_f='all',_jid=null,_adm=false,_at='ov',_buyAmt=500,_cdi=null,_hid=null;
 
